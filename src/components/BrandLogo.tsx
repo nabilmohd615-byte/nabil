@@ -79,9 +79,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {showText && (
         <div className="flex flex-col">
           <span
-            className={`${textSizes[size]} font-extrabold tracking-tight text-neutral-900 font-['Outfit',sans-serif] leading-none`}
+            className={`${textSizes[size]} font-extrabold tracking-tight text-white font-['Outfit',sans-serif] leading-none`}
           >
-            IVQIE<span className="text-rose-600">.</span>
+            IVQIE<span className="text-rose-500">.</span>
           </span>
         </div>
       )}

@@ -18,6 +18,8 @@ export interface SiteAnnouncement {
   message: string;
   linkText?: string;
   linkUrl?: string;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 const INQUIRIES_KEY = 'ivqie_inbound_inquiries';

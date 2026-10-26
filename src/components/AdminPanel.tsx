@@ -16,6 +16,10 @@ import {
   ArrowRight,
   RefreshCw,
   Video,
+  Image as ImageIcon,
+  Upload,
+  Play,
+  Film,
 } from 'lucide-react';
 import { ProjectConcept, saveStoredProjects } from '../data/portfolioData';
 import { InboundInquiry, SiteAnnouncement, saveStoredInquiries, saveStoredAnnouncement } from '../data/inquiriesData';
@@ -66,12 +70,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     step4: '',
     specPlatform: 'Meta & TikTok / Premiere Pro',
     specTurnaround: '48h per batch',
+    imageUrl: '',
+    videoUrl: '',
   });
+
+  const [imageUploading, setImageUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      alert('Please select an image smaller than 8MB.');
+      return;
+    }
+    setImageUploading(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewProject((prev) => ({ ...prev, imageUrl: event.target?.result as string }));
+      setImageUploading(false);
+    };
+    reader.onerror = () => {
+      alert('Error reading image file');
+      setImageUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) {
+      alert('Video file is larger than 25MB. For large videos, paste an external video link (MP4, YouTube, Vimeo, Cloudinary) below.');
+      return;
+    }
+    setVideoUploading(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewProject((prev) => ({ ...prev, videoUrl: event.target?.result as string }));
+      setVideoUploading(false);
+    };
+    reader.onerror = () => {
+      alert('Error reading video file');
+      setVideoUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Announcement edit form
   const [announcementText, setAnnouncementText] = useState(announcement.message);
   const [announcementEnabled, setAnnouncementEnabled] = useState(announcement.enabled);
   const [announcementUrl, setAnnouncementUrl] = useState(announcement.linkUrl || 'https://wa.me/+966509850428');
+  const [announcementImage, setAnnouncementImage] = useState(announcement.imageUrl || '');
+  const [announcementVideo, setAnnouncementVideo] = useState(announcement.videoUrl || '');
   const [contentSavedMsg, setContentSavedMsg] = useState(false);
 
   if (!isOpen) return null;
@@ -86,6 +137,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
     const steps = [newProject.step1, newProject.step2, newProject.step3, newProject.step4]
       .filter((s) => s.trim().length > 0);
+
+    let mediaType: 'image' | 'video' | 'both' | undefined = undefined;
+    if (newProject.imageUrl && newProject.videoUrl) mediaType = 'both';
+    else if (newProject.imageUrl) mediaType = 'image';
+    else if (newProject.videoUrl) mediaType = 'video';
 
     const created: ProjectConcept = {
       id: 'proj-' + Date.now(),
@@ -106,6 +162,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         'Delivery Time': newProject.specTurnaround || '2–3 weeks',
         'Status': 'Live in Production',
       },
+      imageUrl: newProject.imageUrl.trim() || undefined,
+      videoUrl: newProject.videoUrl.trim() || undefined,
+      mediaType,
       createdAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       isCustom: true,
     };
@@ -128,6 +187,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       step4: '',
       specPlatform: 'Meta & TikTok / Premiere Pro',
       specTurnaround: '48h per batch',
+      imageUrl: '',
+      videoUrl: '',
     });
     setShowAddProject(false);
   };
@@ -150,6 +211,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       message: announcementText,
       linkText: 'WhatsApp Direct',
       linkUrl: announcementUrl,
+      imageUrl: announcementImage.trim() || undefined,
+      videoUrl: announcementVideo.trim() || undefined,
     };
     setAnnouncement(updatedAnnouncement);
     saveStoredAnnouncement(updatedAnnouncement);
@@ -458,6 +521,135 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
 
+                  {/* Media Uploads: Image & Video Options */}
+                  <div className="p-4 rounded-2xl bg-neutral-900/90 border border-neutral-800 space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-white">
+                        <Sparkles className="w-4 h-4 text-rose-500" />
+                        <span>Media Attachments (Image &amp; Video Upload)</span>
+                      </div>
+                      <span className="text-[10px] text-neutral-400 font-mono">
+                        Attach Image, Video, or Both
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* 1. Image Upload Option */}
+                      <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-neutral-200 flex items-center gap-1.5">
+                            <ImageIcon className="w-4 h-4 text-rose-400" />
+                            <span>1. Image Upload (ছবি)</span>
+                          </label>
+                          {newProject.imageUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setNewProject({ ...newProject, imageUrl: '' })}
+                              className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold"
+                            >
+                              Remove Image
+                            </button>
+                          )}
+                        </div>
+
+                        {/* File Picker Button */}
+                        <div className="flex items-center gap-2">
+                          <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-neutral-850 hover:bg-neutral-800 text-xs font-medium text-white cursor-pointer border border-neutral-700 transition-colors">
+                            <Upload className="w-3.5 h-3.5 text-rose-400" />
+                            <span>{imageUploading ? 'Loading...' : 'Upload Image File'}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageFileChange}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+
+                        {/* Image URL fallback */}
+                        <input
+                          type="text"
+                          placeholder="Or paste Image URL (https://...)"
+                          value={newProject.imageUrl}
+                          onChange={(e) => setNewProject({ ...newProject, imageUrl: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-rose-500 font-mono"
+                        />
+
+                        {/* Live Image Preview */}
+                        {newProject.imageUrl && (
+                          <div className="relative w-full h-24 rounded-lg overflow-hidden border border-neutral-800 bg-black">
+                            <img
+                              src={newProject.imageUrl}
+                              alt="Upload preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute bottom-1 right-1 bg-neutral-900/90 px-1.5 py-0.5 rounded text-[9px] text-emerald-400 font-mono flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                              Image Ready
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 2. Video Upload Option */}
+                      <div className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-neutral-200 flex items-center gap-1.5">
+                            <Video className="w-4 h-4 text-violet-400" />
+                            <span>2. Video Upload (ভিডিও)</span>
+                          </label>
+                          {newProject.videoUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setNewProject({ ...newProject, videoUrl: '' })}
+                              className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold"
+                            >
+                              Remove Video
+                            </button>
+                          )}
+                        </div>
+
+                        {/* File Picker Button */}
+                        <div className="flex items-center gap-2">
+                          <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-neutral-850 hover:bg-neutral-800 text-xs font-medium text-white cursor-pointer border border-neutral-700 transition-colors">
+                            <Upload className="w-3.5 h-3.5 text-violet-400" />
+                            <span>{videoUploading ? 'Loading...' : 'Upload Video File'}</span>
+                            <input
+                              type="file"
+                              accept="video/*"
+                              onChange={handleVideoFileChange}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+
+                        {/* Video URL fallback */}
+                        <input
+                          type="text"
+                          placeholder="Or paste Video URL (MP4 / WebM / Link)"
+                          value={newProject.videoUrl}
+                          onChange={(e) => setNewProject({ ...newProject, videoUrl: e.target.value })}
+                          className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-violet-500 font-mono"
+                        />
+
+                        {/* Live Video Preview */}
+                        {newProject.videoUrl && (
+                          <div className="relative w-full h-24 rounded-lg overflow-hidden border border-neutral-800 bg-black">
+                            <video
+                              src={newProject.videoUrl}
+                              controls
+                              className="w-full h-full object-contain"
+                            />
+                            <div className="absolute top-1 left-1 bg-neutral-900/90 px-1.5 py-0.5 rounded text-[9px] text-violet-400 font-mono flex items-center gap-1">
+                              <Play className="w-2.5 h-2.5" />
+                              Video Ready
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="pt-2 flex justify-end gap-3">
                     <button
                       type="button"
@@ -510,6 +702,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <p className="text-xs text-neutral-400 mt-1 line-clamp-2">
                         {project.headline}
                       </p>
+
+                      {/* Media preview tag in Admin Panel */}
+                      {(project.imageUrl || project.videoUrl) && (
+                        <div className="mt-3 pt-2.5 border-t border-neutral-800/80 flex items-center gap-2">
+                          {project.imageUrl && (
+                            <img
+                              src={project.imageUrl}
+                              alt={project.name}
+                              className="w-12 h-9 object-cover rounded-lg border border-neutral-800 shrink-0"
+                            />
+                          )}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {project.imageUrl && (
+                              <span className="text-[10px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded flex items-center gap-1 font-mono">
+                                <ImageIcon className="w-3 h-3" />
+                                Image Attached
+                              </span>
+                            )}
+                            {project.videoUrl && (
+                              <span className="text-[10px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded flex items-center gap-1 font-mono">
+                                <Video className="w-3 h-3" />
+                                Video Attached
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500">
@@ -583,6 +802,121 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-3 py-2 text-xs text-white font-mono"
                     placeholder="https://wa.me/+966509850428"
                   />
+                </div>
+
+                {/* Media Attachment for Announcement / Content */}
+                <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-800 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                      Optional Media Attachment (Image &amp; Video Upload)
+                    </span>
+                    <span className="text-[10px] text-neutral-400 font-mono">
+                      Highlights on announcement &amp; showcase
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Image Option */}
+                    <div className="p-3 rounded-lg bg-neutral-950 border border-neutral-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold text-neutral-300 flex items-center gap-1">
+                          <ImageIcon className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Image Upload (ছবি)</span>
+                        </label>
+                        {announcementImage && (
+                          <button
+                            type="button"
+                            onClick={() => setAnnouncementImage('')}
+                            className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <label className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-medium text-white cursor-pointer border border-neutral-700 transition-colors">
+                        <Upload className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Upload Image File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setAnnouncementImage(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Or Image URL (https://...)"
+                        value={announcementImage}
+                        onChange={(e) => setAnnouncementImage(e.target.value)}
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs text-white placeholder-neutral-600 font-mono"
+                      />
+                      {announcementImage && (
+                        <img
+                          src={announcementImage}
+                          alt="Announcement preview"
+                          className="w-full h-16 object-cover rounded border border-neutral-800"
+                        />
+                      )}
+                    </div>
+
+                    {/* Video Option */}
+                    <div className="p-3 rounded-lg bg-neutral-950 border border-neutral-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-semibold text-neutral-300 flex items-center gap-1">
+                          <Video className="w-3.5 h-3.5 text-violet-400" />
+                          <span>Video Upload (ভিডিও)</span>
+                        </label>
+                        {announcementVideo && (
+                          <button
+                            type="button"
+                            onClick={() => setAnnouncementVideo('')}
+                            className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <label className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-medium text-white cursor-pointer border border-neutral-700 transition-colors">
+                        <Upload className="w-3.5 h-3.5 text-violet-400" />
+                        <span>Upload Video File</span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => setAnnouncementVideo(ev.target?.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Or Video URL (MP4 / WebM / Link)"
+                        value={announcementVideo}
+                        onChange={(e) => setAnnouncementVideo(e.target.value)}
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded px-2 py-1 text-xs text-white placeholder-neutral-600 font-mono"
+                      />
+                      {announcementVideo && (
+                        <video
+                          src={announcementVideo}
+                          controls
+                          className="w-full h-16 object-contain rounded border border-neutral-800 bg-black"
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="pt-2 flex justify-end">

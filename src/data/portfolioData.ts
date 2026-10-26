@@ -9,6 +9,8 @@ export interface ProjectConcept {
   mockDataSummary: string;
   specs: { [key: string]: string };
   imageUrl?: string;
+  videoUrl?: string;
+  mediaType?: 'image' | 'video' | 'both';
   createdAt?: string;
   isCustom?: boolean;
 }
@@ -35,6 +37,8 @@ export const INITIAL_PROJECTS: ProjectConcept[] = [
       'Failover': 'Dead-letter queue with retry logic',
       'Status': 'Functional Blueprint Available',
     },
+    imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+    mediaType: 'image',
     isCustom: false,
   },
   {
@@ -58,6 +62,9 @@ export const INITIAL_PROJECTS: ProjectConcept[] = [
       'Review Loop': '48-hour client preview & sign-off milestones',
       'Status': 'Production Framework Available',
     },
+    imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-artificial-intelligence-brain-technology-41584-large.mp4',
+    mediaType: 'both',
     isCustom: false,
   },
   {

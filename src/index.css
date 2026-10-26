@@ -8,30 +8,46 @@
 
   body {
     font-family: var(--font-body);
-    color: #111827;
-    background-color: #FAFAFA;
+    color: #F3F4F6;
+    background-color: #0B0F17;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    color: #FFFFFF;
   }
 }
 
-/* Custom subtle grid background */
+/* Custom subtle dark grid background */
 .bg-grid-subtle {
   background-size: 36px 36px;
   background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
 }
 
 .bg-radial-glow {
-  background: radial-gradient(circle at 50% 30%, rgba(225, 29, 72, 0.06), rgba(139, 92, 246, 0.03) 50%, transparent 75%);
+  background: radial-gradient(circle at 50% 20%, rgba(225, 29, 72, 0.12), rgba(139, 92, 246, 0.06) 45%, transparent 75%);
 }
 
 .bg-radial-dark-glow {
-  background: radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.15), rgba(139, 92, 246, 0.08) 50%, transparent 80%);
+  background: radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.16), rgba(139, 92, 246, 0.08) 50%, transparent 80%);
+}
+
+/* Custom dark scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0F17;
+}
+::-webkit-scrollbar-thumb {
+  background: #1F2937;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;
 }
 
 /* Smooth transitions */

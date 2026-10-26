@@ -64,19 +64,19 @@ export const ProcessSection: React.FC = () => {
   ];
 
   return (
-    <section id="process" className="py-24 bg-white border-t border-neutral-200/80">
+    <section id="process" className="py-24 bg-[#0D111A] border-t border-neutral-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="max-w-3xl mb-16">
-          <div className="flex items-center gap-2 mb-3 text-xs font-bold tracking-widest uppercase text-rose-600">
-            <span className="w-2 h-2 rounded-full bg-rose-600" />
+          <div className="flex items-center gap-2 mb-3 text-xs font-bold tracking-widest uppercase text-rose-500">
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
             <span>HOW WE WORK</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-neutral-900 tracking-tight font-['Outfit',sans-serif]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-['Outfit',sans-serif]">
             From First Conversation to a Working System.
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-neutral-600 leading-relaxed font-normal">
+          <p className="mt-4 text-base sm:text-lg text-neutral-400 leading-relaxed font-normal">
             A disciplined, four-stage implementation methodology designed to eliminate surprises, protect timelines, and ensure predictable outcomes.
           </p>
         </div>
@@ -84,7 +84,7 @@ export const ProcessSection: React.FC = () => {
         {/* Desktop Connected Steps */}
         <div className="hidden lg:grid grid-cols-4 gap-6 relative">
           {/* Connecting Line across steps */}
-          <div className="absolute top-12 left-10 right-10 h-0.5 bg-neutral-200 -z-0" />
+          <div className="absolute top-12 left-10 right-10 h-0.5 bg-neutral-800 -z-0" />
 
           {steps.map((step, idx) => {
             const Icon = step.icon;
@@ -96,24 +96,24 @@ export const ProcessSection: React.FC = () => {
                 onClick={() => setActiveStep(idx)}
                 className={`relative z-10 cursor-pointer flex flex-col justify-between p-6 rounded-2xl border transition-all duration-300 ${
                   isSelected
-                    ? 'bg-neutral-900 text-white border-neutral-900 shadow-xl -translate-y-1'
-                    : 'bg-white text-neutral-900 border-neutral-200/90 hover:border-neutral-300 hover:shadow-md'
+                    ? 'bg-[#151C2C] text-white border-rose-500/80 shadow-xl -translate-y-1'
+                    : 'bg-[#0F1420] text-white border-neutral-800 hover:border-neutral-700 hover:bg-[#131929] hover:shadow-md'
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <span
                       className={`text-xs font-mono font-bold tracking-wider ${
-                        isSelected ? 'text-rose-400' : 'text-rose-600'
+                        isSelected ? 'text-rose-400' : 'text-rose-500'
                       }`}
                     >
                       {step.num}
                     </span>
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors border ${
                         isSelected
-                          ? 'bg-neutral-800 text-white'
-                          : 'bg-neutral-100 text-neutral-700'
+                          ? 'bg-rose-600 text-white border-rose-500'
+                          : 'bg-neutral-900 text-neutral-300 border-neutral-800'
                       }`}
                     >
                       <Icon className="w-5 h-5" />
@@ -121,17 +121,13 @@ export const ProcessSection: React.FC = () => {
                   </div>
 
                   <h3
-                    className={`text-xl font-bold font-['Outfit',sans-serif] ${
-                      isSelected ? 'text-white' : 'text-neutral-900'
-                    }`}
+                    className="text-xl font-bold font-['Outfit',sans-serif] text-white"
                   >
                     {step.title}
                   </h3>
 
                   <p
-                    className={`mt-2 text-xs leading-relaxed ${
-                      isSelected ? 'text-neutral-300' : 'text-neutral-600'
-                    }`}
+                    className="mt-2 text-xs leading-relaxed text-neutral-400"
                   >
                     {step.summary}
                   </p>
@@ -140,13 +136,13 @@ export const ProcessSection: React.FC = () => {
                 <div
                   className={`mt-6 pt-4 border-t text-[11px] font-medium flex items-center justify-between ${
                     isSelected
-                      ? 'border-neutral-800 text-neutral-400'
-                      : 'border-neutral-100 text-neutral-600'
+                      ? 'border-neutral-700/80 text-neutral-300'
+                      : 'border-neutral-800 text-neutral-400'
                   }`}
                 >
                   <span>{step.timeframe}</span>
-                  <span className={isSelected ? 'text-rose-400' : 'text-rose-600'}>
-                    {isSelected ? 'Active' : 'Click to inspect'}
+                  <span className={isSelected ? 'text-rose-400 font-semibold' : 'text-rose-500'}>
+                    {isSelected ? 'Active Phase' : 'Click to inspect'}
                   </span>
                 </div>
               </div>
@@ -155,28 +151,28 @@ export const ProcessSection: React.FC = () => {
         </div>
 
         {/* Selected Step Deep Dive (Desktop) */}
-        <div className="hidden lg:block mt-8 p-6 bg-neutral-50 rounded-2xl border border-neutral-200/80">
+        <div className="hidden lg:block mt-8 p-6 bg-[#0F1420] rounded-2xl border border-neutral-800">
           <div className="flex items-start justify-between gap-8">
             <div className="max-w-lg">
-              <span className="text-xs font-mono font-bold text-rose-600 uppercase">
+              <span className="text-xs font-mono font-bold text-rose-500 uppercase">
                 Stage {steps[activeStep].num} Deep Dive
               </span>
-              <h4 className="text-xl font-bold text-neutral-900 mt-1 font-['Outfit',sans-serif]">
+              <h4 className="text-xl font-bold text-white mt-1 font-['Outfit',sans-serif]">
                 {steps[activeStep].title}: Detailed Implementation Protocol
               </h4>
-              <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
+              <p className="mt-2 text-sm text-neutral-400 leading-relaxed">
                 {steps[activeStep].desc}
               </p>
             </div>
 
-            <div className="flex-1 bg-white p-5 rounded-xl border border-neutral-200">
-              <h5 className="text-xs font-bold uppercase tracking-wider text-neutral-700 mb-3">
+            <div className="flex-1 bg-neutral-900/90 p-5 rounded-xl border border-neutral-800">
+              <h5 className="text-xs font-bold uppercase tracking-wider text-neutral-300 mb-3">
                 Included Deliverables &amp; Milestones
               </h5>
               <div className="grid grid-cols-2 gap-2.5">
                 {steps[activeStep].milestones.map((m, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-neutral-700">
-                    <Check className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
+                  <div key={i} className="flex items-start gap-2 text-xs text-neutral-300">
+                    <Check className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
                     <span>{m}</span>
                   </div>
                 ))}
@@ -193,37 +189,37 @@ export const ProcessSection: React.FC = () => {
             return (
               <div
                 key={step.num}
-                className="relative bg-neutral-50 rounded-2xl p-6 border border-neutral-200"
+                className="relative bg-[#0F1420] rounded-2xl p-6 border border-neutral-800"
               >
-                <div className="flex items-center justify-between pb-4 mb-4 border-b border-neutral-200/80">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-neutral-800">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono font-bold text-rose-600">
+                    <span className="text-xs font-mono font-bold text-rose-500">
                       STEP {step.num}
                     </span>
-                    <span className="text-xs text-neutral-600 font-medium">
+                    <span className="text-xs text-neutral-400 font-medium">
                       {step.timeframe}
                     </span>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-white border border-neutral-200 flex items-center justify-center text-rose-600">
+                  <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-rose-500">
                     <Icon className="w-4 h-4" />
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-neutral-900 font-['Outfit',sans-serif]">
+                <h3 className="text-xl font-bold text-white font-['Outfit',sans-serif]">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-xs text-neutral-600 leading-relaxed">
+                <p className="mt-2 text-xs text-neutral-400 leading-relaxed">
                   {step.summary}
                 </p>
 
-                <div className="mt-4 pt-4 border-t border-neutral-200/80">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 block mb-2">
+                <div className="mt-4 pt-4 border-t border-neutral-800">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 block mb-2">
                     Key Milestones:
                   </span>
                   <ul className="space-y-1.5">
                     {step.milestones.map((m, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs text-neutral-700">
-                        <Check className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
+                      <li key={i} className="flex items-start gap-2 text-xs text-neutral-300">
+                        <Check className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
                         <span>{m}</span>
                       </li>
                     ))}

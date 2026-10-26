@@ -22,7 +22,7 @@ export const SystemVisualization: React.FC = () => {
       type: 'Ingestion Layer',
       desc: 'Website forms, Messenger, WhatsApp, Meta Inboxes & Webhooks seamlessly captured.',
       icon: MessageSquare,
-      color: '#8B5CF6',
+      color: '#A78BFA',
       x: 70,
       y: 90,
     },
@@ -32,7 +32,7 @@ export const SystemVisualization: React.FC = () => {
       type: 'Intelligent Processing',
       desc: 'Real-time qualification, natural language understanding, intent scoring & intelligent dispatch.',
       icon: Cpu,
-      color: '#E11D48',
+      color: '#F43F5E',
       x: 210,
       y: 160,
     },
@@ -42,7 +42,7 @@ export const SystemVisualization: React.FC = () => {
       type: 'Data Infrastructure',
       desc: 'Instant lead records in HubSpot/sheets, appointment bookings & automated follow-ups.',
       icon: Database,
-      color: '#0F172A',
+      color: '#38BDF8',
       x: 350,
       y: 80,
     },
@@ -52,17 +52,17 @@ export const SystemVisualization: React.FC = () => {
       type: 'Marketing Optimization',
       desc: 'Meta Ads & Google Ads audience alignment, retargeting triggers & performance tracking.',
       icon: Zap,
-      color: '#E11D48',
+      color: '#FB7185',
       x: 100,
       y: 250,
     },
     {
       id: 'social-matrix',
-      name: 'Social Distribution',
+      name: 'Social & AI Video',
       type: 'Brand Engagement',
-      desc: 'Content calendar workflows, scheduled publishing, community inbox prioritization.',
+      desc: 'AI text-to-video reels, content calendar workflows, dynamic captions & community triage.',
       icon: Share2,
-      color: '#8B5CF6',
+      color: '#C084FC',
       x: 320,
       y: 250,
     },
@@ -79,20 +79,20 @@ export const SystemVisualization: React.FC = () => {
   const selected = nodes.find((n) => n.id === activeNode) || nodes[1];
 
   return (
-    <div className="relative w-full rounded-2xl bg-white border border-neutral-200/90 shadow-md p-5 overflow-hidden transition-all">
+    <div className="relative w-full rounded-2xl bg-[#0F1420] border border-neutral-800 shadow-xl p-5 overflow-hidden transition-all text-white">
       {/* Ambient background light gradients */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header bar of visualization */}
-      <div className="flex items-center justify-between pb-3 mb-2 border-b border-neutral-100">
+      <div className="flex items-center justify-between pb-3 mb-2 border-b border-neutral-800">
         <div className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-rose-600" />
-          <span className="text-xs font-semibold tracking-wider uppercase text-neutral-800">
+          <Layers className="w-4 h-4 text-rose-500" />
+          <span className="text-xs font-semibold tracking-wider uppercase text-neutral-200">
             Intelligent Systems Map
           </span>
         </div>
-        <span className="text-[11px] font-mono text-neutral-500 tracking-tight">
+        <span className="text-[11px] font-mono text-neutral-400 tracking-tight">
           Active Pipeline Flow
         </span>
       </div>
@@ -107,12 +107,12 @@ export const SystemVisualization: React.FC = () => {
           {/* Subtle grid pattern */}
           <defs>
             <pattern
-              id="sys-grid"
+              id="sys-grid-dark"
               width="24"
               height="24"
               patternUnits="userSpaceOnUse"
             >
-              <circle cx="12" cy="12" r="0.75" fill="#E2E8F0" />
+              <circle cx="12" cy="12" r="0.75" fill="#334155" />
             </pattern>
             <linearGradient id="flow-grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#E11D48" stopOpacity="0.8" />
@@ -120,7 +120,7 @@ export const SystemVisualization: React.FC = () => {
             </linearGradient>
           </defs>
 
-          <rect width="420" height="320" fill="url(#sys-grid)" rx="12" opacity="0.6" />
+          <rect width="420" height="320" fill="url(#sys-grid-dark)" rx="12" opacity="0.6" />
 
           {/* Connection lines */}
           {connections.map((c, i) => (
@@ -130,13 +130,13 @@ export const SystemVisualization: React.FC = () => {
                 y1={c.from[1]}
                 x2={c.to[0]}
                 y2={c.to[1]}
-                stroke={c.active ? '#CBD5E1' : '#E2E8F0'}
+                stroke={c.active ? '#334155' : '#1E293B'}
                 strokeWidth={c.active ? '2' : '1.5'}
                 strokeDasharray={c.active ? '4 4' : 'none'}
               />
               {/* Dynamic pulsing packet along active lines */}
               {c.active && (
-                <circle r="3" fill="#E11D48">
+                <circle r="3.5" fill="#F43F5E">
                   <animateMotion
                     path={`M${c.from[0]},${c.from[1]} L${c.to[0]},${c.to[1]}`}
                     dur={`${2.5 + i * 0.4}s`}
@@ -165,7 +165,7 @@ export const SystemVisualization: React.FC = () => {
                     cy={node.y}
                     r={isCentral ? 32 : 24}
                     fill={node.color}
-                    opacity="0.15"
+                    opacity="0.25"
                   >
                     <animate
                       attributeName="r"
@@ -181,8 +181,8 @@ export const SystemVisualization: React.FC = () => {
                   cx={node.x}
                   cy={node.y}
                   r={isCentral ? 22 : 16}
-                  fill={isSelected ? node.color : '#FFFFFF'}
-                  stroke={isSelected ? '#0F172A' : node.color}
+                  fill={isSelected ? node.color : '#161D2B'}
+                  stroke={isSelected ? '#FFFFFF' : node.color}
                   strokeWidth={isSelected ? '2.5' : '2'}
                   className="transition-all duration-200"
                 />
@@ -190,9 +190,9 @@ export const SystemVisualization: React.FC = () => {
                 {/* Node Label in diagram */}
                 <text
                   x={node.x}
-                  y={node.y + (isCentral ? 34 : 26)}
+                  y={node.y + (isCentral ? 35 : 27)}
                   textAnchor="middle"
-                  fill="#334155"
+                  fill="#CBD5E1"
                   fontSize="10"
                   fontWeight={isSelected ? '700' : '500'}
                   fontFamily="Plus Jakarta Sans, sans-serif"
@@ -206,29 +206,29 @@ export const SystemVisualization: React.FC = () => {
       </div>
 
       {/* Selected Node Details Box */}
-      <div className="mt-2 p-3 bg-neutral-50 rounded-xl border border-neutral-200/80 transition-all">
+      <div className="mt-2 p-3 bg-neutral-900 rounded-xl border border-neutral-800 transition-all">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <div
-              className="w-2.5 h-2.5 rounded-full shrink-0"
+              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
               style={{ backgroundColor: selected.color }}
             />
-            <span className="text-xs font-bold text-neutral-900">
+            <span className="text-xs font-bold text-white">
               {selected.name}
             </span>
           </div>
-          <span className="text-[11px] text-neutral-500 font-medium">
+          <span className="text-[11px] text-neutral-400 font-medium">
             {selected.type}
           </span>
         </div>
-        <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
+        <p className="mt-1 text-xs text-neutral-300 leading-relaxed">
           {selected.desc}
         </p>
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-[11px] text-neutral-400">
+      <div className="mt-3 flex items-center justify-between text-[11px] text-neutral-500">
         <span>Click any node to inspect data flow</span>
-        <span className="flex items-center gap-1 text-rose-600 font-semibold cursor-pointer hover:underline">
+        <span className="flex items-center gap-1 text-rose-400 font-semibold cursor-pointer hover:underline">
           Live automation pipeline
           <ArrowRight className="w-3 h-3" />
         </span>

@@ -45,19 +45,19 @@ export const FaqSection: React.FC = () => {
   };
 
   return (
-    <section id="faq" className="py-24 bg-[#FAFAFA] border-t border-neutral-200/80">
+    <section id="faq" className="py-24 bg-[#0B0F17] border-t border-neutral-800">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 mb-3 text-xs font-bold tracking-widest uppercase text-rose-600">
-            <span className="w-2 h-2 rounded-full bg-rose-600" />
+          <div className="inline-flex items-center gap-2 mb-3 text-xs font-bold tracking-widest uppercase text-rose-500">
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
             <span>CLARITY &amp; ANSWERS</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight font-['Outfit',sans-serif]">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-['Outfit',sans-serif]">
             Frequently Asked Questions
           </h2>
-          <p className="mt-3 text-base text-neutral-600">
+          <p className="mt-3 text-base text-neutral-400">
             Clear, straightforward answers about how we collaborate, scope projects, and deliver results.
           </p>
         </div>
@@ -72,8 +72,8 @@ export const FaqSection: React.FC = () => {
                 key={idx}
                 className={`rounded-2xl transition-all duration-200 border ${
                   isOpen
-                    ? 'bg-white border-neutral-300 shadow-xs'
-                    : 'bg-white/80 border-neutral-200 hover:border-neutral-300'
+                    ? 'bg-[#0F1420] border-neutral-700 shadow-lg'
+                    : 'bg-[#0F1420]/80 border-neutral-800 hover:border-neutral-700'
                 }`}
               >
                 <button
@@ -81,12 +81,14 @@ export const FaqSection: React.FC = () => {
                   className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-2xl cursor-pointer"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-base sm:text-lg font-bold text-neutral-900 font-['Outfit',sans-serif]">
+                  <span className="text-base sm:text-lg font-bold text-white font-['Outfit',sans-serif]">
                     {faq.q}
                   </span>
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                      isOpen ? 'bg-rose-50 text-rose-600 rotate-180' : 'bg-neutral-100 text-neutral-500'
+                      isOpen
+                        ? 'bg-rose-950/80 text-rose-400 rotate-180 border border-rose-800/60'
+                        : 'bg-neutral-900 text-neutral-400 border border-neutral-800'
                     }`}
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -94,8 +96,8 @@ export const FaqSection: React.FC = () => {
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-0 border-t border-neutral-100 mt-1">
-                    <p className="text-sm sm:text-base text-neutral-600 leading-relaxed pt-3">
+                  <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-0 border-t border-neutral-800 mt-1">
+                    <p className="text-sm sm:text-base text-neutral-300 leading-relaxed pt-3">
                       {faq.a}
                     </p>
                   </div>
@@ -105,11 +107,11 @@ export const FaqSection: React.FC = () => {
           })}
         </div>
 
-        <div className="mt-12 text-center text-xs text-neutral-500">
+        <div className="mt-12 text-center text-xs text-neutral-400">
           Have a specific operational question not covered here?{' '}
           <a
             href="#contact"
-            className="text-rose-600 font-semibold hover:underline underline-offset-4"
+            className="text-rose-400 font-semibold hover:underline underline-offset-4"
           >
             Inquire directly with our team →
           </a>

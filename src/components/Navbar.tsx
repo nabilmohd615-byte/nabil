@@ -76,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/95 backdrop-blur-md border-b border-neutral-200/80 shadow-xs'
+            ? 'bg-[#0B0F17]/90 backdrop-blur-md border-b border-neutral-800/80 shadow-lg'
             : 'bg-transparent'
         }`}
       >
@@ -116,7 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
 
             {/* Zone 2: Navigation Links (single line, subtle hover states) */}
-            <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-neutral-600">
+            <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-neutral-400">
               {navLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
@@ -129,8 +129,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className={`transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                       isActive
-                        ? 'text-neutral-900 border-rose-600 font-semibold'
-                        : 'border-transparent hover:text-neutral-900 hover:border-neutral-300'
+                        ? 'text-white border-rose-500 font-semibold'
+                        : 'border-transparent hover:text-white hover:border-neutral-700'
                     }`}
                   >
                     {link.label}
@@ -144,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {onOpenAdmin && (
                 <button
                   onClick={onOpenAdmin}
-                  className="p-2 text-neutral-400 hover:text-rose-600 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
+                  className="p-2 text-neutral-400 hover:text-rose-400 rounded-lg hover:bg-neutral-900 transition-colors cursor-pointer"
                   title="Admin Portal (Ctrl+Shift+A)"
                   aria-label="Admin Portal"
                 >
@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <button
                 onClick={onBookCallClick}
-                className="group relative inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-neutral-900 rounded-lg hover:bg-rose-600 transition-colors shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 whitespace-nowrap shrink-0 cursor-pointer"
+                className="group relative inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-950 bg-white rounded-lg hover:bg-rose-600 hover:text-white transition-colors shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 whitespace-nowrap shrink-0 cursor-pointer"
               >
                 <span>Book a Strategy Call</span>
                 <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -166,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {onOpenAdmin && (
                 <button
                   onClick={onOpenAdmin}
-                  className="p-1.5 text-neutral-500 hover:text-rose-600 rounded-lg"
+                  className="p-1.5 text-neutral-400 hover:text-rose-400 rounded-lg"
                   aria-label="Admin Portal"
                 >
                   <Lock className="w-4 h-4" />
@@ -175,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-neutral-700 hover:text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg"
+                className="p-2 text-neutral-300 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg"
                 aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
                 aria-expanded={mobileMenuOpen}
               >
@@ -189,19 +189,19 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-50 sm:hidden bg-neutral-900/60 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 z-50 sm:hidden bg-neutral-950/80 backdrop-blur-xs transition-opacity"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-2xl p-6 flex flex-col justify-between"
+            className="fixed inset-y-0 right-0 w-full max-w-xs bg-[#0F1420] border-l border-neutral-800 shadow-2xl p-6 flex flex-col justify-between"
             onClick={(e) => e.stopPropagation()}
           >
             <div>
-              <div className="flex items-center justify-between pb-6 border-b border-neutral-100">
+              <div className="flex items-center justify-between pb-6 border-b border-neutral-800">
                 <BrandLogo size="sm" />
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-neutral-500 hover:text-neutral-900 focus:outline-none"
+                  className="p-2 text-neutral-400 hover:text-white focus:outline-none"
                   aria-label="Close Menu"
                 >
                   <X className="w-5 h-5" />
@@ -219,8 +219,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }}
                     className={`text-base font-medium py-2 px-3 rounded-md transition-colors ${
                       activeSection === link.id
-                        ? 'bg-rose-50 text-rose-700 font-semibold'
-                        : 'text-neutral-700 hover:bg-neutral-50'
+                        ? 'bg-rose-500/15 text-rose-400 font-semibold'
+                        : 'text-neutral-300 hover:bg-neutral-850'
                     }`}
                   >
                     {link.label}
@@ -229,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            <div className="pt-6 border-t border-neutral-100 flex flex-col gap-3">
+            <div className="pt-6 border-t border-neutral-800 flex flex-col gap-3">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -240,7 +240,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Book a Strategy Call</span>
                 <ArrowUpRight className="w-4 h-4" />
               </button>
-              <p className="text-center text-xs text-neutral-400">
+              <p className="text-center text-xs text-neutral-500">
                 AI Systems · Marketing · Growth
               </p>
             </div>

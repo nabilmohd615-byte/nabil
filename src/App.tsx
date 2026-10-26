@@ -143,7 +143,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAFA] text-neutral-900 selection:bg-rose-600 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#0B0F17] text-neutral-100 selection:bg-rose-600 selection:text-white">
       {/* Sticky Navigation with Announcement Bar and Admin Access */}
       <Navbar
         onBookCallClick={() => handleOpenStrategyCall()}
