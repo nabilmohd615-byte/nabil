@@ -1,0 +1,169 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Portfolio Project",
+      "description": "Represents an IVQIE case study, demo workflow, or client project displayed in the portfolio.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the project"
+        },
+        "name": {
+          "type": "string",
+          "description": "Title of the project or capability showcase",
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "description": "Category: AI Automation, Digital Marketing, or Social Media Marketing",
+          "enum": ["AI Automation", "Digital Marketing", "Social Media Marketing"]
+        },
+        "label": {
+          "type": "string",
+          "description": "Display badge label",
+          "enum": ["Concept Project", "Demo Workflow", "Live Client Project", "Case Study"]
+        },
+        "headline": {
+          "type": "string",
+          "description": "Short impactful headline summary",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "description": "Full narrative description of the workflow or engagement",
+          "maxLength": 2000
+        },
+        "architectureSteps": {
+          "type": "array",
+          "description": "Sequential steps in the operational workflow"
+        },
+        "mockDataSummary": {
+          "type": "string",
+          "description": "Scope validation summary",
+          "maxLength": 300
+        },
+        "specs": {
+          "type": "object",
+          "description": "Technical specifications dictionary"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "isCustom": {
+          "type": "boolean",
+          "description": "Indicates whether this project was added via the Admin panel"
+        }
+      },
+      "required": ["name", "category", "label", "headline", "description"]
+    },
+    "Inquiry": {
+      "title": "Client Consultation Inquiry",
+      "description": "Client project brief or strategy call booking submitted through the website.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique inquiry reference code"
+        },
+        "name": {
+          "type": "string",
+          "description": "Client full name",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "Client business email",
+          "maxLength": 150
+        },
+        "company": {
+          "type": "string",
+          "description": "Client company or website URL",
+          "maxLength": 150
+        },
+        "service": {
+          "type": "string",
+          "description": "Selected service or capability focus",
+          "maxLength": 100
+        },
+        "goals": {
+          "type": "string",
+          "description": "Project goals or operational bottlenecks described by client",
+          "maxLength": 3000
+        },
+        "budget": {
+          "type": "string",
+          "description": "Estimated budget tier",
+          "maxLength": 50
+        },
+        "timeline": {
+          "type": "string",
+          "description": "Desired implementation timeline",
+          "maxLength": 50
+        },
+        "slot": {
+          "type": "string",
+          "description": "Scheduled strategy call window if booked",
+          "maxLength": 100
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Timezone of client",
+          "maxLength": 100
+        },
+        "status": {
+          "type": "string",
+          "description": "Administrative follow-up status",
+          "enum": ["New", "Contacted", "Proposal Sent", "Closed"]
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Readable submission timestamp"
+        }
+      },
+      "required": ["name", "email", "goals", "service"]
+    },
+    "Announcement": {
+      "title": "Site Announcement",
+      "description": "Global promotional or onboarding ribbon shown across all devices.",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the announcement banner is actively displayed"
+        },
+        "message": {
+          "type": "string",
+          "description": "Text displayed in the banner",
+          "maxLength": 300
+        },
+        "linkText": {
+          "type": "string",
+          "description": "Call to action label",
+          "maxLength": 50
+        },
+        "linkUrl": {
+          "type": "string",
+          "description": "Target destination URL (e.g. WhatsApp)",
+          "maxLength": 300
+        }
+      },
+      "required": ["enabled", "message"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Collection of portfolio projects and case studies."
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Collection of inbound client consultation briefs and strategy call requests."
+    },
+    "/site_settings/{settingId}": {
+      "schema": "Announcement",
+      "description": "Global website configuration and announcements."
+    }
+  }
+}

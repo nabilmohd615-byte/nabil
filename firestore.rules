@@ -1,0 +1,65 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['name', 'category', 'label', 'headline', 'description'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 120
+        && data.category in ['AI Automation', 'Digital Marketing', 'Social Media Marketing']
+        && data.label in ['Concept Project', 'Demo Workflow', 'Live Client Project', 'Case Study']
+        && data.headline is string && data.headline.size() <= 250
+        && data.description is string && data.description.size() <= 2500;
+    }
+
+    function isValidInquiry(data) {
+      return data.keys().hasAll(['name', 'email', 'service', 'goals'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 120
+        && data.email is string && data.email.size() > 3 && data.email.size() <= 150
+        && data.service is string && data.service.size() <= 120
+        && data.goals is string && data.goals.size() > 0 && data.goals.size() <= 3500;
+    }
+
+    function isValidAnnouncement(data) {
+      return data.keys().hasAll(['enabled', 'message'])
+        && data.enabled is bool
+        && data.message is string && data.message.size() <= 400;
+    }
+
+    // Projects Collection (Portfolio case studies)
+    // Public visitors can read portfolio projects.
+    // Portfolio project management allowed with strict schema validation.
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isValidId(projectId) && isValidProject(request.resource.data);
+      allow update: if isValidId(projectId) && isValidProject(request.resource.data);
+      allow delete: if isValidId(projectId);
+    }
+
+    // Inbound Inquiries & Strategy Bookings
+    // Public visitors can create inquiries with validated fields.
+    // Read and status update operations for administration.
+    match /inquiries/{inquiryId} {
+      allow read: if true;
+      allow create: if isValidId(inquiryId) && isValidInquiry(request.resource.data);
+      allow update: if isValidId(inquiryId);
+      allow delete: if isValidId(inquiryId);
+    }
+
+    // Site Settings & Announcements
+    // Public visitors can read announcements; management updates allowed with validation.
+    match /site_settings/{settingId} {
+      allow read: if true;
+      allow write: if isValidId(settingId) && (settingId != 'announcement' || isValidAnnouncement(request.resource.data));
+    }
+  }
+}
