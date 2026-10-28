@@ -1,22 +1,14 @@
 import React from 'react';
 import { BrandLogo } from './BrandLogo';
-import { ArrowUpRight, Mail, Globe, Shield, Lock, MessageCircle } from 'lucide-react';
+import { Mail, Globe, MessageCircle } from 'lucide-react';
 
 interface FooterProps {
-  onOpenLegal: (type: 'privacy' | 'terms') => void;
-  onSelectService: (serviceName: string) => void;
+  onNavigate: (path: string) => void;
   onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenLegal, onSelectService, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
   const currentYear = new Date().getFullYear();
-
-  const handleScroll = (href: string) => {
-    const el = document.querySelector(href);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <footer className="bg-neutral-900 text-neutral-300 pt-16 pb-12 border-t border-neutral-800 text-xs">
@@ -73,100 +65,80 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal, onSelectService, on
             </h4>
             <ul className="space-y-2.5">
               {[
-                { label: 'Home', href: '#home' },
-                { label: 'Services', href: '#services' },
-                { label: 'Our Work', href: '#work' },
-                { label: 'Process', href: '#process' },
-                { label: 'Why IVQIE', href: '#why-us' },
-                { label: 'FAQ', href: '#faq' },
-                { label: 'Contact', href: '#contact' },
+                { label: 'Home', path: '/' },
+                { label: 'Services Catalog', path: '/services' },
+                { label: 'Industry Solutions', path: '/solutions' },
+                { label: 'Case Studies', path: '/case-studies' },
+                { label: 'Methodology & Process', path: '/process' },
+                { label: 'Insights & Research', path: '/insights' },
+                { label: 'About Agency', path: '/about' },
+                { label: 'Contact & Scoping', path: '/contact' },
               ].map((item) => (
                 <li key={item.label}>
-                  <a
-                    href={item.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleScroll(item.href);
-                    }}
-                    className="text-neutral-400 hover:text-white transition-colors"
+                  <button
+                    onClick={() => onNavigate(item.path)}
+                    className="text-neutral-400 hover:text-white transition-colors cursor-pointer text-left"
                   >
                     {item.label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 3: AI Automation Capabilities */}
-          <div className="lg:col-span-2">
+          {/* Column 3: AI Automation Disciplines */}
+          <div className="lg:col-span-3">
             <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4 font-mono">
-              AI Automation
+              AI Disciplines
             </h4>
             <ul className="space-y-2 text-neutral-400">
-              <li>
-                <button
-                  onClick={() => onSelectService('AI Automation & Intelligent Agents')}
-                  className="hover:text-rose-400 transition-colors text-left"
-                >
-                  AI Chatbot Systems
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onSelectService('AI Automation & Intelligent Agents')}
-                  className="hover:text-rose-400 transition-colors text-left"
-                >
-                  CRM Lead Qualification
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onSelectService('AI Automation & Intelligent Agents')}
-                  className="hover:text-rose-400 transition-colors text-left"
-                >
-                  Inbox &amp; Message Routing
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onSelectService('AI Automation & Intelligent Agents')}
-                  className="hover:text-rose-400 transition-colors text-left"
-                >
-                  Workflow Orchestration
-                </button>
-              </li>
+              {[
+                { label: 'Autonomous AI Agents', path: '/services/ai-agents' },
+                { label: 'Enterprise Workflow Automation', path: '/services/workflow-automation' },
+                { label: 'Conversational AI & WhatsApp', path: '/services/conversational-ai' },
+                { label: 'CRM & Pipeline Automation', path: '/services/crm-automation' },
+                { label: 'Ultra-Low Latency Voice AI', path: '/services/ai-voice-assistants' },
+                { label: 'Custom AI Models & Vision', path: '/services/custom-ai-integrations' },
+              ].map((svc) => (
+                <li key={svc.path}>
+                  <button
+                    onClick={() => onNavigate(svc.path)}
+                    className="hover:text-rose-400 transition-colors text-left"
+                  >
+                    {svc.label}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 4: Digital Marketing & Social */}
-          <div className="lg:col-span-4">
+          {/* Column 4: Industry Solutions */}
+          <div className="lg:col-span-3">
             <h4 className="text-xs font-bold uppercase tracking-widest text-white mb-4 font-mono">
-              Marketing &amp; Social
+              Industry Solutions
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <span className="text-[11px] font-semibold text-neutral-300 block mb-2">Digital Strategy</span>
-                <ul className="space-y-1.5 text-neutral-400">
-                  <li>Meta &amp; Google Ads</li>
-                  <li>Funnel Architecture</li>
-                  <li>Tracking &amp; GA4 Setup</li>
-                  <li>Landing Page Tuning</li>
-                </ul>
-              </div>
-              <div>
-                <span className="text-[11px] font-semibold text-neutral-300 block mb-2">Social Growth</span>
-                <ul className="space-y-1.5 text-neutral-400">
-                  <li>Content Calendars</li>
-                  <li>Creative Direction</li>
-                  <li>Short-Form Planning</li>
-                  <li>Community Triage</li>
-                </ul>
-              </div>
-            </div>
+            <ul className="space-y-2 text-neutral-400">
+              {[
+                { label: 'Healthcare & Specialized Clinics', path: '/solutions' },
+                { label: 'FinTech & Wealth Management', path: '/solutions' },
+                { label: 'D2C E-Commerce & Retail', path: '/solutions' },
+                { label: 'Logistics, Freight & Customs', path: '/solutions' },
+                { label: 'Real Estate & Property Development', path: '/solutions' },
+                { label: 'Professional Services & Advisory', path: '/solutions' },
+              ].map((sol) => (
+                <li key={sol.label}>
+                  <button
+                    onClick={() => onNavigate(sol.path)}
+                    className="hover:text-cyan-400 transition-colors text-left"
+                  >
+                    {sol.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
 
-            {/* Configured Destinations Note */}
             <div className="mt-5 pt-4 border-t border-neutral-800 text-[11px] text-neutral-500">
-              Official Social Profiles: In active rollout. Dedicated client communication channels provided upon proposal acceptance.
+              Regulatory compliance: Saudi PDPL, SAMA, ZATCA Phase 2, SOC 2 Type II ready.
             </div>
           </div>
 
@@ -180,26 +152,22 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal, onSelectService, on
 
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <button
-              onClick={() => onOpenLegal('privacy')}
+              onClick={() => onNavigate('/privacy-policy')}
               className="hover:text-neutral-300 transition-colors cursor-pointer"
             >
               Privacy Policy
             </button>
-            <span aria-hidden="true">·</span>
             <button
-              onClick={() => onOpenLegal('terms')}
+              onClick={() => onNavigate('/terms')}
               className="hover:text-neutral-300 transition-colors cursor-pointer"
             >
               Terms of Service
             </button>
-            <span aria-hidden="true">·</span>
             <button
               onClick={onOpenAdmin}
-              className="inline-flex items-center gap-1.5 text-neutral-400 hover:text-rose-400 transition-colors cursor-pointer font-mono text-[11px]"
-              title="Restricted Administrator Portal"
+              className="text-neutral-600 hover:text-neutral-400 transition-colors cursor-pointer font-mono"
             >
-              <Lock className="w-3 h-3 text-neutral-500 hover:text-rose-400" />
-              <span>Admin Portal</span>
+              Admin
             </button>
           </div>
         </div>

@@ -1,32 +1,36 @@
 import React, { useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import type { Variants } from 'motion/react';
 import {
-  ArrowUpRight,
-  Cpu,
-  Sparkles,
-  Filter,
-  CheckCircle2,
   ArrowRight,
-  Eye,
-  X,
-  Layers,
-  Activity,
+  ArrowUpRight,
   Video,
   Image as ImageIcon,
-  Play,
+  CheckCircle2,
+  Building2,
+  Layers,
+  Sparkles,
+  ShieldCheck,
+  Eye,
+  Activity
 } from 'lucide-react';
 import { ProjectConcept, INITIAL_PROJECTS } from '../data/portfolioData';
 
 interface CaseStudiesProps {
   onDiscussProjectClick: (projectName?: string) => void;
   projects?: ProjectConcept[];
+  onOpenCaseStudy: (slug: string) => void;
+  onViewAllCaseStudies: () => void;
 }
 
 export const CaseStudiesSection: React.FC<CaseStudiesProps> = ({
   onDiscussProjectClick,
   projects = INITIAL_PROJECTS,
+  onOpenCaseStudy,
+  onViewAllCaseStudies,
 }) => {
   const [activeFilter, setActiveFilter] = useState<'All' | 'AI Automation' | 'Digital Marketing' | 'Social Media Marketing'>('All');
-  const [activeConceptModal, setActiveConceptModal] = useState<ProjectConcept | null>(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const concepts = projects;
 
@@ -34,26 +38,49 @@ export const CaseStudiesSection: React.FC<CaseStudiesProps> = ({
     ? concepts
     : concepts.filter((c) => c.category === activeFilter);
 
+  const smoothEase = [0.16, 1, 0.3, 1] as const;
+
+  const cardVariants: Variants = {
+    hidden: { 
+      opacity: 0, 
+      y: shouldReduceMotion ? 0 : 24 
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : 0.65,
+        ease: smoothEase,
+      },
+    },
+  };
+
   return (
-    <section id="work" className="py-24 bg-[#0D111A] border-t border-neutral-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="work" className="py-24 md:py-32 bg-[#0A0E17] border-t border-neutral-800/80 relative overflow-hidden">
+      
+      {/* Ambient background glows */}
+      <div className="absolute top-1/3 -right-40 w-96 h-96 bg-rose-600/8 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -left-40 w-96 h-96 bg-violet-600/8 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute inset-0 bg-grid-subtle opacity-25 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+        {/* Section Header with Category Filter */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-3 text-xs font-bold tracking-widest uppercase text-rose-500">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <div className="flex items-center gap-2 mb-3 text-xs font-bold tracking-widest uppercase text-rose-500 font-['Space_Mono',monospace]">
+              <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#F43F5E]" />
               <span>SELECTED WORK</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-['Outfit',sans-serif]">
-              Practical Systems. Thoughtful Execution.
+              Architectural Systems. Proven Execution.
             </h2>
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed font-normal">
-              Explore our architectural concepts and demonstration workflows designed for scalable operations.
+            <p className="mt-4 text-base sm:text-lg text-neutral-400 font-light leading-relaxed font-['Plus_Jakarta_Sans',sans-serif]">
+              A curated selection of autonomous AI workflows, high-retention video production matrices, and performance growth architectures engineered for ambitious global brands.
             </p>
           </div>
 
-          {/* Filter Bar (Functional Buttons) */}
+          {/* Filter Bar */}
           <div className="flex flex-wrap items-center gap-1.5 p-1 bg-neutral-900/90 rounded-xl border border-neutral-800 self-start md:self-end">
             {(['All', 'AI Automation', 'Digital Marketing', 'Social Media Marketing'] as const).map((filter) => (
               <button
@@ -61,296 +88,225 @@ export const CaseStudiesSection: React.FC<CaseStudiesProps> = ({
                 onClick={() => setActiveFilter(filter)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   activeFilter === filter
-                    ? 'bg-neutral-800 text-white shadow-xs'
+                    ? 'bg-neutral-800 text-white shadow-xs border border-neutral-700/60'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
-                {filter === 'All' ? 'All Concepts' : filter.replace(' Marketing', '')}
+                {filter === 'All' ? 'All Works' : filter.replace(' Marketing', '')}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Project Concepts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {filteredConcepts.map((concept) => (
-            <div
-              key={concept.id}
-              className="group flex flex-col justify-between rounded-2xl border border-neutral-800 bg-[#0F1420] hover:bg-[#131929] hover:border-neutral-700 hover:shadow-xl transition-all duration-300 p-6"
-            >
-              <div>
-                {/* Clean Unboxed Metadata with Typographic Separator */}
-                <div className="flex items-center gap-2 text-xs text-neutral-400 mb-4 pb-3 border-b border-neutral-800/80">
-                  <span className="font-semibold text-rose-500 uppercase tracking-wider text-[11px]">
-                    {concept.category}
-                  </span>
-                  <span aria-hidden="true">·</span>
-                  <span className="text-neutral-400 font-mono text-[11px]">
-                    {concept.label}
-                  </span>
-                </div>
+        {/* Alternating Editorial Showcase Cards */}
+        <div className="space-y-12 sm:space-y-16">
+          {filteredConcepts.map((concept, index) => {
+            const isEven = index % 2 === 0;
 
-                {/* Visual Representation: Video, Image, or Architecture Schema */}
-                <div className="relative w-full h-44 rounded-xl bg-neutral-950 mb-5 overflow-hidden border border-neutral-800/90 group/media">
-                  {concept.videoUrl ? (
-                    <div className="relative w-full h-full bg-black flex items-center justify-center">
-                      <video
-                        src={concept.videoUrl}
-                        poster={concept.imageUrl}
-                        className="w-full h-full object-cover"
-                        muted
-                        loop
-                        playsInline
-                        onMouseOver={(e) => {
-                          const v = e.currentTarget;
-                          v.play().catch(() => {});
-                        }}
-                        onMouseOut={(e) => {
-                          const v = e.currentTarget;
-                          v.pause();
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-neutral-950/40 pointer-events-none" />
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-neutral-900/90 text-[10px] font-mono text-violet-400 border border-violet-500/30">
-                        <Video className="w-3 h-3" />
-                        <span>Interactive Video</span>
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover/media:scale-110 transition-transform">
-                        <div className="w-10 h-10 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-lg shadow-rose-600/40">
-                          <Play className="w-4 h-4 fill-white ml-0.5" />
+            return (
+              <motion.article
+                key={concept.id}
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: '-60px' }}
+                className="group rounded-3xl border border-neutral-800/90 bg-[#0d121c]/90 hover:border-neutral-700/80 hover:bg-[#101726] transition-all duration-300 shadow-2xl p-6 sm:p-9 relative overflow-hidden"
+              >
+                {/* Subtle top ambient glow */}
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500/0 via-rose-500/50 to-violet-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center ${
+                  isEven ? '' : 'lg:flex-row-reverse'
+                }`}>
+                  
+                  {/* Media Column (Span 6) */}
+                  <div className={`lg:col-span-6 ${isEven ? 'lg:order-1' : 'lg:order-2'}`}>
+                    <div 
+                      onClick={() => onOpenCaseStudy(concept.slug || concept.id)}
+                      className="relative aspect-[16/10] w-full rounded-2xl bg-neutral-950 overflow-hidden border border-neutral-800 group/media cursor-pointer shadow-lg"
+                    >
+                      {concept.videoUrl ? (
+                        <div className="relative w-full h-full bg-black flex items-center justify-center">
+                          <video
+                            src={concept.videoUrl}
+                            poster={concept.imageUrl}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover/media:scale-103"
+                            muted
+                            loop
+                            playsInline
+                            onMouseOver={(e) => {
+                              const v = e.currentTarget;
+                              v.play().catch(() => {});
+                            }}
+                            onMouseOut={(e) => {
+                              const v = e.currentTarget;
+                              v.pause();
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-neutral-950/30 pointer-events-none" />
+                          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900/90 text-[10px] font-mono text-violet-400 border border-violet-500/30">
+                            <Video className="w-3 h-3" />
+                            <span>Interactive Video</span>
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="w-12 h-12 rounded-full bg-rose-600/90 text-white flex items-center justify-center shadow-xl shadow-rose-600/40 group-hover/media:scale-110 transition-transform">
+                              <ArrowRight className="w-5 h-5 ml-0.5" />
+                            </div>
+                          </div>
+                          <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] text-neutral-300 font-mono pointer-events-none">
+                            <span>Hover to preview video</span>
+                            <span className="text-rose-400 font-bold">Click to view study →</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[10px] text-neutral-300 font-mono pointer-events-none">
-                        <span>Hover to preview · Click inspect</span>
-                        <span className="text-rose-400">AI Video Reel</span>
-                      </div>
+                      ) : concept.imageUrl ? (
+                        <div className="relative w-full h-full">
+                          <img
+                            src={concept.imageUrl}
+                            alt={concept.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover/media:scale-103"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-neutral-950/20" />
+                          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900/90 text-[10px] font-mono text-rose-400 border border-rose-500/30">
+                            <ImageIcon className="w-3 h-3" />
+                            <span>System Architecture</span>
+                          </div>
+                          <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] text-neutral-300 font-mono">
+                            <span className="truncate max-w-[220px]">{concept.clientIndustry}</span>
+                            <span className="text-emerald-400 font-bold">Verified Blueprint</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full p-6 flex flex-col justify-between bg-neutral-900/50">
+                          <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
+                            <span className="text-rose-400 font-bold flex items-center gap-1.5">
+                              <Activity className="w-3.5 h-3.5" />
+                              {concept.name}
+                            </span>
+                            <span>Architecture Blueprint</span>
+                          </div>
+                          <p className="text-xs text-neutral-300 leading-relaxed font-light">
+                            {concept.description}
+                          </p>
+                          <span className="text-[11px] text-rose-400 font-mono">Click to inspect blueprint →</span>
+                        </div>
+                      )}
                     </div>
-                  ) : concept.imageUrl ? (
-                    <div className="relative w-full h-full bg-neutral-950">
-                      <img
-                        src={concept.imageUrl}
-                        alt={concept.name}
-                        className="w-full h-full object-cover group-hover/media:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-neutral-950/20 to-neutral-950/40" />
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-neutral-900/90 text-[10px] font-mono text-rose-400 border border-rose-500/30">
-                        <ImageIcon className="w-3 h-3" />
-                        <span>Visual Asset</span>
-                      </div>
-                      <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[10px] text-neutral-300 font-mono">
-                        <span className="truncate">{concept.headline}</span>
-                        <span className="text-emerald-400">Verified</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="relative w-full h-full p-4 flex flex-col justify-between">
-                      <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 bg-rose-600/20 rounded-full blur-2xl" />
-                      
-                      <div className="flex items-center justify-between text-[11px] text-neutral-400 font-mono">
-                        <span className="flex items-center gap-1.5 text-rose-400">
-                          <Activity className="w-3.5 h-3.5 text-rose-500" />
-                          {concept.name} Architecture
+                  </div>
+
+                  {/* Editorial Text Column (Span 6) */}
+                  <div className={`lg:col-span-6 flex flex-col justify-between ${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
+                    <div>
+                      {/* Category & Industry */}
+                      <div className="flex flex-wrap items-center gap-2.5 text-xs text-neutral-400 mb-3.5 font-mono">
+                        <span className="font-bold text-rose-500 uppercase tracking-wider text-[11px]">
+                          {concept.category}
                         </span>
-                        <span className="text-neutral-400">Step 1 of 5</span>
+                        <span className="text-neutral-700">|</span>
+                        <span className="text-neutral-300 font-normal">
+                          {concept.clientIndustry}
+                        </span>
+                        {concept.verifiedNotice && (
+                          <>
+                            <span className="text-neutral-700">|</span>
+                            <span className="text-emerald-400 text-[10px] flex items-center gap-1">
+                              <ShieldCheck className="w-3 h-3" />
+                              Verified
+                            </span>
+                          </>
+                        )}
                       </div>
 
-                      {/* Flow representation inside preview */}
-                      <div className="space-y-2 py-1">
-                        <div className="flex items-center gap-2 text-xs text-neutral-200">
-                          <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-                          <span className="font-medium truncate">{concept.architectureSteps[0]}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-neutral-400">
-                          <span className="w-2 h-2 rounded-full bg-violet-500 shrink-0" />
-                          <span className="font-medium truncate">{concept.architectureSteps[1]}</span>
-                        </div>
-                      </div>
+                      {/* Title & Headline */}
+                      <h3 
+                        onClick={() => onOpenCaseStudy(concept.slug || concept.id)}
+                        className="text-2xl sm:text-3xl font-extrabold text-white font-['Outfit',sans-serif] tracking-tight hover:text-rose-400 transition-colors cursor-pointer"
+                      >
+                        {concept.name}: {concept.headline}
+                      </h3>
 
-                      <div className="pt-2 border-t border-neutral-800/80 flex items-center justify-between text-[10px] text-neutral-400">
-                        <span>Verified logic blueprint</span>
-                        <span className="text-rose-400 font-mono">Active Model</span>
+                      {/* Challenge / Solution Narrative snippet */}
+                      <p className="mt-3.5 text-sm sm:text-base text-neutral-300 leading-relaxed font-light font-['Plus_Jakarta_Sans',sans-serif]">
+                        {concept.challenge || concept.description}
+                      </p>
+
+                      {/* Key Verified Outcomes Stat Badges */}
+                      {concept.verifiedOutcomes && concept.verifiedOutcomes.length > 0 && (
+                        <div className="mt-6 pt-5 border-t border-neutral-800/80 grid grid-cols-2 gap-4">
+                          {concept.verifiedOutcomes.slice(0, 2).map((vo, i) => (
+                            <div key={i} className="p-3 rounded-xl bg-neutral-950/60 border border-neutral-800/80">
+                              <div className="text-xl sm:text-2xl font-extrabold text-rose-500 font-['Outfit',sans-serif]">
+                                {vo.metric}
+                              </div>
+                              <div className="text-[10px] uppercase font-mono text-neutral-400 mt-0.5">
+                                {vo.label}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Technology Pills */}
+                      <div className="mt-5 flex flex-wrap items-center gap-1.5">
+                        {concept.technologies.slice(0, 5).map((tech, ti) => (
+                          <span
+                            key={ti}
+                            className="text-[11px] font-mono px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 border border-neutral-800"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                        {concept.technologies.length > 5 && (
+                          <span className="text-[10px] font-mono text-neutral-500">
+                            +{concept.technologies.length - 5} more
+                          </span>
+                        )}
                       </div>
                     </div>
-                  )}
+
+                    {/* Actions */}
+                    <div className="mt-8 pt-5 border-t border-neutral-800/80 flex flex-wrap items-center justify-between gap-4">
+                      <button
+                        onClick={() => onOpenCaseStudy(concept.slug || concept.id)}
+                        className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white hover:text-rose-400 transition-colors cursor-pointer group/cta font-['Outfit',sans-serif]"
+                      >
+                        <span>View In-Depth Case Study</span>
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover/cta:translate-x-1 text-rose-500" />
+                      </button>
+
+                      <button
+                        onClick={() => onDiscussProjectClick(concept.name)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg border border-neutral-750 transition-colors cursor-pointer font-['Outfit',sans-serif]"
+                      >
+                        <span>Discuss This Workflow</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+                      </button>
+                    </div>
+
+                  </div>
+
                 </div>
-
-                {/* Concept Title & Headline */}
-                <h3 className="text-xl font-bold text-white font-['Outfit',sans-serif] group-hover:text-rose-400 transition-colors">
-                  {concept.name}
-                </h3>
-                <p className="mt-1 text-xs font-medium text-neutral-300">
-                  {concept.headline}
-                </p>
-
-                <p className="mt-3 text-xs text-neutral-400 leading-relaxed">
-                  {concept.description}
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="mt-6 pt-4 border-t border-neutral-800/80 flex items-center justify-between gap-3">
-                <button
-                  onClick={() => setActiveConceptModal(concept)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-300 hover:text-rose-400 transition-colors cursor-pointer"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Inspect Blueprint</span>
-                </button>
-
-                <button
-                  onClick={() => onDiscussProjectClick(concept.name)}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-300 cursor-pointer"
-                >
-                  <span>Discuss Project</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
-          ))}
+              </motion.article>
+            );
+          })}
         </div>
 
-        {/* Global CTA Strip for Work */}
-        <div className="mt-12 text-center">
-          <button
-            onClick={() => onDiscussProjectClick()}
-            className="inline-flex items-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-white bg-neutral-900 hover:bg-rose-600 rounded-xl border border-neutral-800 hover:border-rose-600 transition-all shadow-xs cursor-pointer"
-          >
-            <span>Discuss a Project</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </button>
+        {/* Global Directory CTA Strip */}
+        <div className="mt-16 text-center">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-2 sm:p-2.5 bg-neutral-900/90 rounded-2xl border border-neutral-800 shadow-xl">
+            <span className="text-xs text-neutral-400 px-4 font-light">
+              Interested in reviewing our complete technical archive?
+            </span>
+            <button
+              onClick={onViewAllCaseStudies}
+              className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-all shadow-md shadow-rose-600/30 cursor-pointer font-['Outfit',sans-serif]"
+            >
+              <span>Explore All Case Studies &amp; Blueprints</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
       </div>
-
-      {/* Concept Architecture Inspection Modal */}
-      {activeConceptModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4"
-          onClick={() => setActiveConceptModal(null)}
-        >
-          <div
-            className="bg-[#0F1420] rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-800 text-white max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-800">
-              <div className="flex items-center gap-2 text-xs font-mono font-bold text-rose-500">
-                <span>{activeConceptModal.name}</span>
-                <span>·</span>
-                <span className="text-neutral-400 font-sans">{activeConceptModal.label}</span>
-              </div>
-              <button
-                onClick={() => setActiveConceptModal(null)}
-                className="p-1.5 text-neutral-400 hover:text-white rounded-lg hover:bg-neutral-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-2xl font-extrabold text-white font-['Outfit',sans-serif]">
-                {activeConceptModal.headline}
-              </h3>
-              <p className="mt-2 text-sm text-neutral-300 leading-relaxed">
-                {activeConceptModal.description}
-              </p>
-            </div>
-
-            {/* Attached Media Display: Video & Image Player */}
-            {(activeConceptModal.videoUrl || activeConceptModal.imageUrl) && (
-              <div className="mt-5 space-y-3">
-                {activeConceptModal.videoUrl && (
-                  <div className="rounded-xl overflow-hidden border border-neutral-800 bg-black">
-                    <div className="p-2.5 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-1.5 font-semibold text-violet-400">
-                        <Video className="w-3.5 h-3.5" />
-                        Project Video Showcase
-                      </span>
-                      <span className="text-[10px] text-neutral-400 font-mono">HD Interactive Player</span>
-                    </div>
-                    <video
-                      src={activeConceptModal.videoUrl}
-                      controls
-                      autoPlay={false}
-                      poster={activeConceptModal.imageUrl}
-                      className="w-full max-h-72 object-contain bg-black"
-                    />
-                  </div>
-                )}
-
-                {activeConceptModal.imageUrl && !activeConceptModal.videoUrl && (
-                  <div className="rounded-xl overflow-hidden border border-neutral-800 bg-neutral-950">
-                    <div className="p-2.5 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-1.5 font-semibold text-rose-400">
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        Project Visual Asset
-                      </span>
-                      <span className="text-[10px] text-neutral-400 font-mono">Full Resolution</span>
-                    </div>
-                    <img
-                      src={activeConceptModal.imageUrl}
-                      alt={activeConceptModal.name}
-                      className="w-full max-h-72 object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Architecture Steps Sequence */}
-            <div className="mt-6">
-              <h4 className="text-xs font-bold tracking-wider uppercase text-neutral-300 mb-3">
-                Execution Workflow Sequence
-              </h4>
-              <div className="space-y-3">
-                {activeConceptModal.architectureSteps.map((step, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-neutral-900/80 border border-neutral-800"
-                  >
-                    <span className="w-6 h-6 rounded-lg bg-neutral-800 text-rose-400 text-[11px] font-mono font-bold flex items-center justify-center shrink-0 border border-neutral-700">
-                      0{idx + 1}
-                    </span>
-                    <p className="text-xs text-neutral-300 leading-relaxed pt-0.5">
-                      {step}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Technical Specifications */}
-            <div className="mt-6 p-4 rounded-xl bg-neutral-900/60 border border-neutral-800">
-              <h4 className="text-xs font-bold tracking-wider uppercase text-neutral-300 mb-2">
-                Implementation Specifications
-              </h4>
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                {Object.entries(activeConceptModal.specs).map(([key, value]) => (
-                  <div key={key}>
-                    <span className="text-neutral-400 block text-[11px]">{key}</span>
-                    <span className="font-semibold text-white">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-neutral-800 flex items-center justify-between gap-4">
-              <p className="text-xs text-neutral-400">
-                Blueprint can be customized to your specific tech stack.
-              </p>
-              <button
-                onClick={() => {
-                  const name = activeConceptModal.name;
-                  setActiveConceptModal(null);
-                  onDiscussProjectClick(name);
-                }}
-                className="px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-colors cursor-pointer shrink-0"
-              >
-                Discuss This Workflow
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 };

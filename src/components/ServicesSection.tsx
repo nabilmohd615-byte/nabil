@@ -40,9 +40,15 @@ export interface ServiceItem {
 
 interface ServicesSectionProps {
   onSelectService: (serviceName: string) => void;
+  onNavigateToServiceDetail?: (slug: string) => void;
+  onViewAllServices?: () => void;
 }
 
-export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectService }) => {
+export const ServicesSection: React.FC<ServicesSectionProps> = ({
+  onSelectService,
+  onNavigateToServiceDetail,
+  onViewAllServices,
+}) => {
   const [selectedServiceModal, setSelectedServiceModal] = useState<ServiceItem | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
@@ -221,20 +227,32 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectServic
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
-        <div className="max-w-3xl mb-14 sm:mb-16">
-          <div className="flex items-center gap-2.5 mb-3">
-            <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#F43F5E]" />
-            <span className="text-xs font-bold tracking-[0.2em] uppercase text-rose-500 font-['Space_Mono',monospace]">
-              CAPABILITIES &amp; ARCHITECTURE
-            </span>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14 sm:mb-16">
+          <div className="max-w-3xl">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#F43F5E]" />
+              <span className="text-xs font-bold tracking-[0.2em] uppercase text-rose-500 font-['Space_Mono',monospace]">
+                CAPABILITIES &amp; ARCHITECTURE
+              </span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-['Outfit',sans-serif]">
+              Intelligent Systems Engineered To Scale.
+            </h2>
+            <p className="mt-4 text-base sm:text-lg text-neutral-300 leading-relaxed font-light font-['Plus_Jakarta_Sans',sans-serif]">
+              From autonomous multi-step reasoning agents to zero-latency CRM pipelines, we architect resilient AI infrastructure designed to eliminate repetitive manual work and unlock exponential business velocity.
+            </p>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-['Outfit',sans-serif]">
-            Intelligent Systems Engineered To Scale.
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-neutral-300 leading-relaxed font-light font-['Plus_Jakarta_Sans',sans-serif]">
-            From autonomous multi-step reasoning agents to zero-latency CRM pipelines, we architect resilient AI infrastructure designed to eliminate repetitive manual work and unlock exponential business velocity.
-          </p>
+          {onViewAllServices && (
+            <button
+              onClick={onViewAllServices}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-rose-500 text-xs font-mono font-semibold text-neutral-300 hover:text-white transition-all shrink-0 cursor-pointer"
+            >
+              <span>Explore All 6 Architectures</span>
+              <ArrowRight className="w-4 h-4 text-rose-500" />
+            </button>
+          )}
         </div>
 
         {/* Bento Grid Container */}
@@ -901,7 +919,22 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectServic
                   <span>Deployment sprint: 2–3 weeks</span>
                 </div>
                 
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  {onNavigateToServiceDetail && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const id = selectedServiceModal.id;
+                        setSelectedServiceModal(null);
+                        onNavigateToServiceDetail(id);
+                      }}
+                      className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-neutral-300 hover:text-white bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-xl transition-all cursor-pointer inline-flex items-center justify-center gap-1.5"
+                    >
+                      <span>Full Architecture Spec</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-rose-400" />
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => {
@@ -909,7 +942,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({ onSelectServic
                       setSelectedServiceModal(null);
                       onSelectService(title);
                     }}
-                    className="w-full sm:w-auto px-6 py-3 text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-all shadow-md shadow-rose-600/30 cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-all shadow-md shadow-rose-600/30 cursor-pointer"
                   >
                     Inquire For This Service →
                   </button>

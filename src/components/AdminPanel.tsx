@@ -143,13 +143,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     else if (newProject.imageUrl) mediaType = 'image';
     else if (newProject.videoUrl) mediaType = 'video';
 
+    const rawSlug = newProject.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = `${rawSlug || 'project'}-${Date.now().toString().slice(-4)}`;
+
     const created: ProjectConcept = {
       id: 'proj-' + Date.now(),
+      slug,
       name: newProject.name.trim(),
       category: newProject.category,
       label: newProject.label,
+      clientIndustry: 'Commercial Enterprise (Global & Saudi Arabia)',
       headline: newProject.headline.trim(),
       description: newProject.description.trim() || 'Custom delivered solution by IVQIE for commercial growth and automation.',
+      challenge: 'Manual operational processes and fragmented digital channels were causing lead drop-off and excessive administrative friction.',
+      solution: newProject.description.trim() || 'IVQIE implemented tailored automation architecture with direct CRM integration and multi-channel telemetry.',
       architectureSteps: steps.length > 0 ? steps : [
         'Discovery & requirement specification',
         'System architecture & creative workflow setup',
@@ -162,6 +169,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         'Delivery Time': newProject.specTurnaround || '2–3 weeks',
         'Status': 'Live in Production',
       },
+      technologies: ['AI Automation', 'Enterprise Cloud', 'WhatsApp Cloud API', 'TypeScript'],
+      verifiedNotice: 'Verified Client Project Architecture',
       imageUrl: newProject.imageUrl.trim() || undefined,
       videoUrl: newProject.videoUrl.trim() || undefined,
       mediaType,
