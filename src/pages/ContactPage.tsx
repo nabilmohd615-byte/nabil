@@ -36,6 +36,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({
   const [selectedService, setSelectedService] = useState('Autonomous AI Agents');
   const [budgetRange, setBudgetRange] = useState('$5,000 - $15,000');
   const [message, setMessage] = useState('');
+  const [consentCheckbox, setConsentCheckbox] = useState(false);
   
   // Anti-Spam protection: Honeypot + Time gate
   const [honeypot, setHoneypot] = useState('');
@@ -75,9 +76,9 @@ export const ContactPage: React.FC<ContactPageProps> = ({
       return;
     }
 
-    // 2. Submission speed check (Spam bot protection: must take at least 2.5 seconds to fill)
+    // 2. Submission speed check (Spam bot protection: must take at least 1.8 seconds)
     const timeElapsed = Date.now() - renderedTimestamp;
-    if (timeElapsed < 2500) {
+    if (timeElapsed < 1800) {
       setErrorMessage('Please take a moment to review your message before submitting.');
       return;
     }
@@ -99,19 +100,47 @@ export const ContactPage: React.FC<ContactPageProps> = ({
       return;
     }
 
+    if (!consentCheckbox) {
+      setErrorMessage('Please accept the consent checkbox to process your project inquiry.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Simulate server-side validation & dispatch delay
-      await new Promise((res) => setTimeout(res, 850));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          businessEmail: email.trim(),
+          companyName: companyName.trim() || undefined,
+          serviceInterestedIn: selectedService,
+          projectBudgetRange: budgetRange,
+          projectDescription: message.trim(),
+          consentCheckbox,
+          website_url_check: honeypot,
+          renderedTimestamp,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Server rejected the inquiry brief.');
+      }
+
+      const generatedId = data.submissionId || `IVQ-${Date.now().toString().slice(-6)}`;
 
       const newInquiry: InboundInquiry = {
-        id: `IVQ-${Date.now().toString().slice(-6)}`,
+        id: generatedId,
         name: fullName.trim(),
         email: email.trim(),
         company: companyName.trim() || undefined,
         service: selectedService,
-        goals: `Phone: ${phone.trim() || 'N/A'}\nBudget: ${budgetRange}\n\nProject Scope:\n${message.trim()}`,
+        goals: `Company: ${companyName.trim() || 'N/A'}\nPhone: ${phone.trim() || 'N/A'}\nBudget: ${budgetRange}\n\nProject Scope:\n${message.trim()}`,
         budget: budgetRange,
         timeline: estimate.sprintWeeks,
         submittedAt: new Date().toLocaleString([], {
@@ -127,9 +156,10 @@ export const ContactPage: React.FC<ContactPageProps> = ({
       onInquirySubmitted(newInquiry);
       setSubmittedInquiry(newInquiry);
       setIsSubmitting(false);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Submission error:', err);
-      setErrorMessage('Network error while processing inquiry. Please try again or reach out on WhatsApp.');
+      const message = (err as Error)?.message || 'Network error while processing inquiry. Please try again or reach out on WhatsApp.';
+      setErrorMessage(message);
       setIsSubmitting(false);
     }
   };
@@ -465,6 +495,24 @@ export const ContactPage: React.FC<ContactPageProps> = ({
                   placeholder="Describe your current bottleneck, existing software platforms (e.g. HubSpot, Salesforce, Salla, PostgreSQL), and target automation outcome..."
                   className="w-full px-4 py-3 bg-neutral-950 border border-neutral-800 rounded-xl text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500 transition-colors leading-relaxed"
                 />
+              </div>
+
+              {/* Consent Checkbox */}
+              <div className="mb-6 p-4 rounded-xl bg-neutral-950/80 border border-neutral-800/80">
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="consentCheckbox"
+                    name="consentCheckbox"
+                    checked={consentCheckbox}
+                    onChange={(e) => setConsentCheckbox(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-rose-600 focus:ring-rose-500 focus:ring-offset-neutral-950 cursor-pointer shrink-0"
+                    required
+                  />
+                  <span className="text-xs text-neutral-300 leading-relaxed font-light">
+                    I consent to IVQIE processing my submitted information to evaluate this technical brief and connect with me regarding our automation services. <span className="text-rose-400 font-medium">*</span>
+                  </span>
+                </label>
               </div>
 
               <div className="flex items-center justify-between gap-4 pt-2">

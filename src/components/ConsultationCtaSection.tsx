@@ -25,6 +25,9 @@ export const ConsultationCtaSection: React.FC<ConsultationProps> = ({
     budget: '$1,000 – $3,000',
     timeline: 'Within 2–4 weeks',
   });
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [renderedTimestamp, setRenderedTimestamp] = useState<number>(0);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   // Scheduler State
   const [selectedSlot, setSelectedSlot] = useState<string>('Tomorrow, 3:00 PM');
@@ -35,6 +38,10 @@ export const ConsultationCtaSection: React.FC<ConsultationProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submissionReference, setSubmissionReference] = useState<string>('');
+
+  useEffect(() => {
+    setRenderedTimestamp(Date.now());
+  }, []);
 
   useEffect(() => {
     if (preselectedService) {
@@ -58,18 +65,50 @@ export const ConsultationCtaSection: React.FC<ConsultationProps> = ({
       newErrors.goals = 'Please describe your project or operational bottlenecks (minimum 10 characters).';
     }
 
+    if (activeTab === 'form' && !consentGiven) {
+      newErrors.consent = 'Please provide consent to process your technical inquiry.';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
     if (!validate()) return;
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      // Forward form to our secure server API proxy
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.name.trim(),
+          businessEmail: formData.email.trim(),
+          companyName: formData.company.trim() || undefined,
+          serviceInterestedIn: formData.service,
+          projectBudgetRange: formData.budget,
+          projectDescription: activeTab === 'scheduler'
+            ? `[Video Strategy Session Request: ${selectedSlot} (${selectedTimezone})]\n${formData.goals.trim() || 'Strategy session request'}`
+            : formData.goals.trim(),
+          consentCheckbox: true,
+          renderedTimestamp,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Server rejected the inquiry.');
+      }
+
+      const generatedId = result.submissionId || `IVQ-${Date.now().toString().slice(-6)}`;
+
       const saved = addInboundInquiry({
+        id: generatedId,
         name: formData.name.trim(),
         email: formData.email.trim(),
         company: formData.company.trim() || undefined,
@@ -87,8 +126,13 @@ export const ConsultationCtaSection: React.FC<ConsultationProps> = ({
 
       setIsSubmitting(false);
       setIsSubmitted(true);
-      setSubmissionReference(saved.id);
-    }, 600);
+      setSubmissionReference(generatedId);
+    } catch (err: unknown) {
+      console.error('Submission error:', err);
+      const errMsg = (err as Error)?.message || 'Failed to dispatch inquiry. Please reach out via WhatsApp.';
+      setServerError(errMsg);
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -237,6 +281,14 @@ export const ConsultationCtaSection: React.FC<ConsultationProps> = ({
             ) : activeTab === 'form' ? (
               /* Inquiry Form */
               <form onSubmit={handleSubmit} noValidate>
+                {/* Server Error Alert */}
+                {serverError && (
+                  <div role="alert" className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 text-xs text-rose-400">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{serverError}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between pb-6 mb-8 border-b border-neutral-800">
                   <div>
                     <h3 className="text-xl sm:text-2xl font-bold font-['Outfit',sans-serif] text-white">
@@ -384,6 +436,29 @@ export const ConsultationCtaSection: React.FC<ConsultationProps> = ({
                       <option value="Exploratory / Planning stage">Exploratory / Planning stage</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Consent Checkbox */}
+                <div className="mt-6 p-4 rounded-xl bg-neutral-950/80 border border-neutral-800/80">
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      id="ctaConsentCheckbox"
+                      checked={consentGiven}
+                      onChange={(e) => setConsentGiven(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-neutral-700 bg-neutral-900 text-rose-600 focus:ring-rose-500 focus:ring-offset-neutral-950 cursor-pointer shrink-0"
+                      required
+                    />
+                    <span className="text-xs text-neutral-300 leading-relaxed font-light">
+                      I consent to IVQIE processing my information to review this inquiry and contact me regarding automation solutions. <span className="text-rose-400 font-medium">*</span>
+                    </span>
+                  </label>
+                  {errors.consent && (
+                    <p className="mt-2 text-xs text-rose-400 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.consent}
+                    </p>
+                  )}
                 </div>
 
                 {/* Submit Button */}

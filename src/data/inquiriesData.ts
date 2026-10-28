@@ -69,11 +69,11 @@ export function saveStoredInquiries(inquiries: InboundInquiry[]) {
   }
 }
 
-export function addInboundInquiry(inquiry: Omit<InboundInquiry, 'id' | 'submittedAt' | 'status'>): InboundInquiry {
+export function addInboundInquiry(inquiry: Omit<InboundInquiry, 'id' | 'submittedAt' | 'status'> & { id?: string }): InboundInquiry {
   const current = getStoredInquiries();
   const newEntry: InboundInquiry = {
     ...inquiry,
-    id: 'IVQ-' + Math.floor(100000 + Math.random() * 900000),
+    id: inquiry.id || ('IVQ-' + Math.floor(100000 + Math.random() * 900000)),
     submittedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     status: 'New',
   };
