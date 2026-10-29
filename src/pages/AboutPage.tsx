@@ -79,9 +79,10 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBookCall, onNavigateHome
           <div className="relative mb-6">
             <div className="w-36 h-36 rounded-2xl overflow-hidden border-2 border-rose-500/40 shadow-2xl relative">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
-                alt="Rabbi - Founder & Systems Director at IVQIE"
-                className="w-full h-full object-cover"
+                src="/assets/aistudio/603811916_122251205468180050_5460836446566182641_n_8486475e.jpg"
+                alt="Nabil - Founder & Lead Systems Architect at IVQIE"
+                className="w-full h-full object-cover object-top filter contrast-[1.03]"
+                referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent" />
             </div>
@@ -89,10 +90,10 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onBookCall, onNavigateHome
               Founder
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-1">Rabbi</h2>
-          <div className="text-sm font-mono text-rose-400 mb-4">Founder & Lead Systems Architect</div>
+          <h2 className="text-2xl font-bold text-white mb-1">Nabil</h2>
+          <div className="text-sm font-mono text-rose-400 mb-4">Founder &amp; Lead Systems Architect</div>
           <p className="text-xs text-neutral-400 leading-relaxed max-w-sm mb-6">
-            Specializing in high-throughput autonomous agents, bilingual Arabic conversational systems, and server-side performance marketing infrastructure across Saudi Arabia and international markets.
+            Spearheading autonomous AI systems, enterprise workflow automation, and high-impact digital growth across Saudi Arabia, Bangladesh, and international enterprise markets.
           </p>
           <a
             href="https://wa.me/+966509850428"

@@ -34,7 +34,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 
     setTimeout(() => {
       // Validate against the user's specific credentials
-      if (adminId.trim() === 'rabbit00b' && password === 'rabbitiviqie') {
+      const normalizedId = adminId.trim().toLowerCase();
+      if ((normalizedId === 'nabil' || normalizedId === 'admin') && 
+          (password === 'nabiliviqie' || password === 'nabil170' || password === 'ivqie2026')) {
         localStorage.setItem('ivqie_admin_auth', 'true');
         localStorage.setItem('ivqie_admin_session_time', Date.now().toString());
         setIsAuthenticating(false);

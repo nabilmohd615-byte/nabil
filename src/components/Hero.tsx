@@ -303,13 +303,13 @@ export const Hero: React.FC<HeroProps> = ({ onBookCallClick, onExploreWorkClick 
                       <div className="flex items-center gap-3">
                         <img
                           src="/assets/aistudio/603811916_122251205468180050_5460836446566182641_n_8486475e.jpg"
-                          alt="IVQIE Founder & Systems Director"
+                          alt="Nabil - IVQIE Founder & Systems Director"
                           className="w-11 h-11 rounded-lg object-cover border border-neutral-700 shadow-sm shrink-0"
                           referrerPolicy="no-referrer"
                         />
                         <div>
                           <div className="text-xs font-bold text-white flex items-center gap-1.5 font-['Outfit',sans-serif]">
-                            <span>Founder &amp; Chief Systems Lead</span>
+                            <span>Nabil · Founder &amp; Systems Lead</span>
                             <span className="text-[10px] text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded font-mono border border-rose-500/25">
                               IVQIE
                             </span>
@@ -339,7 +339,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookCallClick, onExploreWorkClick 
                     <div className="relative aspect-[4/4.5] max-h-[380px] w-full overflow-hidden bg-neutral-950">
                       <img
                         src="/assets/aistudio/603811916_122251205468180050_5460836446566182641_n_8486475e.jpg"
-                        alt="IVQIE Founder & Chief Architect"
+                        alt="Nabil - IVQIE Founder & Chief Architect"
                         className="w-full h-full object-cover object-top filter contrast-[1.03]"
                         referrerPolicy="no-referrer"
                       />
@@ -352,7 +352,7 @@ export const Hero: React.FC<HeroProps> = ({ onBookCallClick, onExploreWorkClick 
                           <span>Executive Leadership</span>
                         </div>
                         <h3 className="text-xl font-bold font-['Outfit',sans-serif] tracking-tight">
-                          Founder &amp; Chief Systems Architect
+                          Nabil · Founder &amp; Chief Systems Architect
                         </h3>
                         <p className="text-xs text-neutral-300 mt-1 font-light leading-relaxed">
                           Spearheading autonomous AI systems, enterprise workflow automation, and high-impact digital growth for international clients.
