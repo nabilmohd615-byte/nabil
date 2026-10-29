@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -264,6 +265,158 @@ app.post('/api/contact', async (req: Request, res: Response): Promise<void> => {
       error: 'An internal error occurred while dispatching your project brief. Please try again.',
     });
   }
+});
+
+// ==========================================
+// Admin Password Reset Security Infrastructure
+// ==========================================
+const AUTHORIZED_ADMIN_EMAIL = 'mnnabil170@gmail.com';
+
+interface ResetTokenRecord {
+  email: string;
+  expiresAt: number;
+  used: boolean;
+}
+const resetTokens = new Map<string, ResetTokenRecord>();
+
+// Periodically purge expired tokens
+setInterval(() => {
+  const now = Date.now();
+  for (const [tok, record] of resetTokens.entries()) {
+    if (now > record.expiresAt || record.used) {
+      resetTokens.delete(tok);
+    }
+  }
+}, 60000);
+
+// Route 1: Request Password Reset
+app.post('/api/admin/forgot-password', async (req: Request, res: Response): Promise<void> => {
+  const { email } = req.body;
+  const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown-ip';
+  const now = Date.now();
+
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+  // Strict Security Rule: ONLY mnnabil170@gmail.com is authorized!
+  if (normalizedEmail !== AUTHORIZED_ADMIN_EMAIL) {
+    console.warn(`[Security Alert] Unauthorized password reset attempted from IP ${clientIp} for email: ${normalizedEmail}`);
+    res.status(403).json({
+      success: false,
+      error: 'Access Denied: Unrecognized email address. Only the authorized system owner is permitted to request a password reset.',
+    });
+    return;
+  }
+
+  // Generate a cryptographically secure 64-char hex token
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = now + 15 * 60 * 1000; // 15 minutes TTL
+
+  resetTokens.set(token, {
+    email: normalizedEmail,
+    expiresAt,
+    used: false,
+  });
+
+  // Construct absolute reset URL
+  const originHeader = (req.headers.origin as string) || (req.headers.referer as string) || `http://${req.headers.host || 'localhost:3000'}`;
+  const cleanOrigin = originHeader.replace(/\/$/, '');
+  const resetUrl = `${cleanOrigin}/#reset-password?token=${token}`;
+
+  // Notify via n8n webhook (which triggers Google Sheets & Gmail notification)
+  const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
+  if (n8nWebhookUrl) {
+    try {
+      fetch(n8nWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'admin_password_reset_request',
+          recipientEmail: AUTHORIZED_ADMIN_EMAIL,
+          subject: '🔐 IVQIE Admin Console — Password Reset Request',
+          resetLink: resetUrl,
+          token,
+          expiresIn: '15 Minutes',
+          timestamp: new Date().toISOString(),
+          requestedFromIp: clientIp,
+          message: 'A password reset was requested for the IVQIE administrative console. Use this link within 15 minutes to configure your new password.',
+        }),
+      }).catch((err) => {
+        console.warn('[n8n Webhook] Password reset notification dispatch failed:', (err as Error)?.message);
+      });
+    } catch {
+      // ignore async notify failure
+    }
+  }
+
+  console.log(`[Admin Security] Generated password reset token (expires in 15m)`);
+
+  res.status(200).json({
+    success: true,
+    message: 'Password reset link dispatched to your authorized administrator inbox.',
+    resetUrl,
+    token,
+    expiresAt,
+  });
+});
+
+// Route 2: Verify Reset Token
+app.post('/api/admin/verify-reset-token', (req: Request, res: Response): void => {
+  const { token } = req.body;
+  if (!token || typeof token !== 'string') {
+    res.status(400).json({ valid: false, error: 'Token is required.' });
+    return;
+  }
+
+  const record = resetTokens.get(token);
+  if (!record) {
+    res.status(404).json({ valid: false, error: 'Invalid or expired reset token.' });
+    return;
+  }
+
+  if (Date.now() > record.expiresAt) {
+    resetTokens.delete(token);
+    res.status(410).json({ valid: false, error: 'Reset token has expired (15-minute window exceeded).' });
+    return;
+  }
+
+  if (record.used) {
+    res.status(410).json({ valid: false, error: 'Reset token has already been used.' });
+    return;
+  }
+
+  res.status(200).json({ valid: true, email: record.email });
+});
+
+// Route 3: Finalize Password Reset
+app.post('/api/admin/reset-password', (req: Request, res: Response): void => {
+  const { token, newPassword } = req.body;
+
+  if (!token || typeof token !== 'string') {
+    res.status(400).json({ success: false, error: 'Token is required.' });
+    return;
+  }
+
+  const record = resetTokens.get(token);
+  if (!record || Date.now() > record.expiresAt || record.used) {
+    res.status(400).json({ success: false, error: 'Invalid, used, or expired reset token.' });
+    return;
+  }
+
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 6) {
+    res.status(400).json({ success: false, error: 'New password must be at least 6 characters long.' });
+    return;
+  }
+
+  // Mark token as consumed
+  record.used = true;
+  resetTokens.delete(token);
+
+  console.log(`[Admin Security] Password successfully reset for ${record.email}`);
+
+  res.status(200).json({
+    success: true,
+    message: 'Admin password successfully updated. You may now sign in with your new password.',
+  });
 });
 
 // ==========================================

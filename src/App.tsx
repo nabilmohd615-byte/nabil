@@ -102,6 +102,27 @@ export default function App() {
   });
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
+  const [resetPasswordToken, setResetPasswordToken] = useState<string | undefined>(undefined);
+
+  // Check URL query parameters and hash for reset password token
+  useEffect(() => {
+    const handleUrlCheck = () => {
+      const fullUrl = window.location.href;
+      if (fullUrl.includes('token=') || fullUrl.includes('reset-password')) {
+        const match = fullUrl.match(/[?&#]token=([a-zA-Z0-9]+)/);
+        if (match && match[1]) {
+          setResetPasswordToken(match[1]);
+          setAdminLoginOpen(true);
+        } else if (fullUrl.includes('reset-password')) {
+          setAdminLoginOpen(true);
+        }
+      }
+    };
+
+    handleUrlCheck();
+    window.addEventListener('hashchange', handleUrlCheck);
+    return () => window.removeEventListener('hashchange', handleUrlCheck);
+  }, []);
 
   // App Route State
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(parseRouteFromLocation);
@@ -543,8 +564,12 @@ export default function App() {
       {/* Admin Security & Management Modals */}
       <AdminLoginModal
         isOpen={adminLoginOpen}
-        onClose={() => setAdminLoginOpen(false)}
+        onClose={() => {
+          setAdminLoginOpen(false);
+          setResetPasswordToken(undefined);
+        }}
         onLoginSuccess={handleLoginSuccess}
+        initialToken={resetPasswordToken}
       />
 
       <AdminPanel
