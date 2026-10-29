@@ -9,8 +9,6 @@ import { CaseStudiesDirectory } from './components/CaseStudiesDirectory';
 import { CaseStudyDetail } from './components/CaseStudyDetail';
 import { WhyIvqieSection } from './components/WhyIvqieSection';
 import { ProcessSection } from './components/ProcessSection';
-import { TechStackSection } from './components/TechStackSection';
-import { ExpectationsSection } from './components/ExpectationsSection';
 import { FaqSection } from './components/FaqSection';
 import { ConsultationCtaSection } from './components/ConsultationCtaSection';
 import { Footer } from './components/Footer';
@@ -25,8 +23,6 @@ import { ServiceDetailPage } from './pages/ServiceDetailPage';
 import { SolutionsPage } from './pages/SolutionsPage';
 import { AboutPage } from './pages/AboutPage';
 import { ProcessPage } from './pages/ProcessPage';
-import { InsightsCatalogPage } from './pages/InsightsCatalogPage';
-import { InsightDetailPage } from './pages/InsightDetailPage';
 import { ContactPage } from './pages/ContactPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { TermsPage } from './pages/TermsPage';
@@ -46,7 +42,6 @@ import {
   saveInquiryToFirestore,
 } from './services/firebaseSyncService';
 import { SERVICES_CATALOG } from './data/servicesData';
-import { INSIGHTS_CATALOG } from './data/insightsData';
 
 export type AppRoute =
   | { type: 'home' }
@@ -57,8 +52,6 @@ export type AppRoute =
   | { type: 'case-study-detail'; slug: string }
   | { type: 'about' }
   | { type: 'process' }
-  | { type: 'insights' }
-  | { type: 'insight-detail'; slug: string }
   | { type: 'contact' }
   | { type: 'privacy-policy' }
   | { type: 'terms' };
@@ -85,11 +78,7 @@ function parseRouteFromLocation(): AppRoute {
   }
   if (path === 'about') return { type: 'about' };
   if (path === 'process') return { type: 'process' };
-  if (path === 'insights') return { type: 'insights' };
-  if (path.startsWith('insights/') || path.startsWith('insight/')) {
-    const slug = path.replace(/^(insights|insight)\//, '');
-    return { type: 'insight-detail', slug };
-  }
+  if (path === 'insights' || path.startsWith('insights/')) return { type: 'services' };
   if (path === 'contact') return { type: 'contact' };
   if (path === 'privacy-policy' || path === 'privacy') return { type: 'privacy-policy' };
   if (path === 'terms') return { type: 'terms' };
@@ -173,18 +162,6 @@ export default function App() {
         title = 'Our 4-Phase Delivery Protocol | IVQIE Methodology';
         description = 'How we ship production-grade AI systems in 30 days with shadow execution, golden test suites, and 90-day warranties.';
         break;
-      case 'insights':
-        title = 'Engineering Insights & Research | IVQIE Whitepapers';
-        description = 'Technical architectural blueprints, Saudi PDPL compliance guides, and low-latency audio benchmarks published by IVQIE.';
-        break;
-      case 'insight-detail': {
-        const art = INSIGHTS_CATALOG.find((a) => a.slug === currentRoute.slug);
-        if (art) {
-          title = `${art.title} | IVQIE Research`;
-          description = art.subtitle;
-        }
-        break;
-      }
       case 'contact':
         title = 'Contact & Technical Scoping | IVQIE AI Agency';
         description = 'Schedule a 30-minute architecture consultation or connect directly on WhatsApp with our lead systems engineers.';
@@ -357,22 +334,16 @@ export default function App() {
                 onViewAllCaseStudies={() => navigateTo('/case-studies')}
               />
 
-              {/* 5. Why IVQIE (Technology Should Make Business Simpler.) */}
+              {/* 5. Why IVQIE (Deterministic SLA & Engineering Guarantees) */}
               <WhyIvqieSection />
 
-              {/* 6. Our Process (Scroll-triggered Timeline) */}
+              {/* 6. Our Process (4-Phase Deployment Protocol) */}
               <ProcessSection />
 
-              {/* 7. Technology Stack (The Right Tools for the Right Job.) */}
-              <TechStackSection />
-
-              {/* 8. What You Can Expect */}
-              <ExpectationsSection />
-
-              {/* 9. FAQ */}
+              {/* 7. FAQ */}
               <FaqSection />
 
-              {/* 10. Final Consultation CTA & Working Lead Form / Scheduler */}
+              {/* 8. Final Consultation CTA & Working Lead Form / Scheduler */}
               <ConsultationCtaSection
                 preselectedService={preselectedConsultationService}
                 onClearPreselectedService={() => setPreselectedConsultationService(undefined)}
@@ -503,41 +474,7 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* Route 9: /insights */}
-          {currentRoute.type === 'insights' && (
-            <motion.div
-              key="route-insights"
-              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
-              transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
-            >
-              <InsightsCatalogPage
-                onOpenInsight={(slug) => navigateTo(`/insights/${slug}`)}
-                onNavigateHome={() => navigateTo('/')}
-              />
-            </motion.div>
-          )}
-
-          {/* Route 10: /insights/[slug] */}
-          {currentRoute.type === 'insight-detail' && (
-            <motion.div
-              key={`route-insight-${currentRoute.slug}`}
-              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
-              transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
-            >
-              <InsightDetailPage
-                slug={currentRoute.slug}
-                onBack={() => navigateTo('/insights')}
-                onBookCall={handleOpenStrategyCall}
-                onOpenInsight={(slug) => navigateTo(`/insights/${slug}`)}
-              />
-            </motion.div>
-          )}
-
-          {/* Route 11: /contact */}
+          {/* Route: /contact */}
           {currentRoute.type === 'contact' && (
             <motion.div
               key="route-contact"

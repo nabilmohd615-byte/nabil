@@ -69,8 +69,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAdmin }) => {
                 { label: 'Services Catalog', path: '/services' },
                 { label: 'Industry Solutions', path: '/solutions' },
                 { label: 'Case Studies', path: '/case-studies' },
-                { label: 'Methodology & Process', path: '/process' },
-                { label: 'Insights & Research', path: '/insights' },
                 { label: 'About Agency', path: '/about' },
                 { label: 'Contact & Scoping', path: '/contact' },
               ].map((item) => (
