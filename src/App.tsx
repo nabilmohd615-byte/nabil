@@ -4,10 +4,9 @@ import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { TrustStrip } from './components/TrustStrip';
 import { ServicesSection } from './components/ServicesSection';
-import { CaseStudiesSection } from './components/CaseStudiesSection';
-import { CaseStudiesDirectory } from './components/CaseStudiesDirectory';
-import { CaseStudyDetail } from './components/CaseStudyDetail';
-import { WhyIvqieSection } from './components/WhyIvqieSection';
+import { PortfolioSection } from './components/PortfolioSection';
+import { PortfolioDirectory } from './components/PortfolioDirectory';
+import { PortfolioDetail } from './components/PortfolioDetail';
 import { ProcessSection } from './components/ProcessSection';
 import { FaqSection } from './components/FaqSection';
 import { ConsultationCtaSection } from './components/ConsultationCtaSection';
@@ -39,7 +38,9 @@ import {
   subscribeToProjects,
   subscribeToInquiries,
   subscribeToAnnouncement,
+  subscribeToAdminSettings,
   saveInquiryToFirestore,
+  deleteProjectFromFirestore,
 } from './services/firebaseSyncService';
 import { SERVICES_CATALOG } from './data/servicesData';
 
@@ -48,8 +49,8 @@ export type AppRoute =
   | { type: 'services' }
   | { type: 'service-detail'; slug: string }
   | { type: 'solutions' }
-  | { type: 'case-studies' }
-  | { type: 'case-study-detail'; slug: string }
+  | { type: 'portfolio' }
+  | { type: 'portfolio-detail'; slug: string }
   | { type: 'about' }
   | { type: 'process' }
   | { type: 'contact' }
@@ -71,10 +72,14 @@ function parseRouteFromLocation(): AppRoute {
     return { type: 'service-detail', slug };
   }
   if (path === 'solutions') return { type: 'solutions' };
-  if (path === 'case-studies') return { type: 'case-studies' };
-  if (path.startsWith('case-studies/') || path.startsWith('case-study/')) {
-    const slug = path.replace(/^(case-studies|case-study)\//, '');
-    return { type: 'case-study-detail', slug };
+  if (path === 'portfolio' || path === 'case-studies') return { type: 'portfolio' };
+  if (
+    path.startsWith('portfolio/') ||
+    path.startsWith('case-studies/') ||
+    path.startsWith('case-study/')
+  ) {
+    const slug = path.replace(/^(portfolio|case-studies|case-study)\//, '');
+    return { type: 'portfolio-detail', slug };
   }
   if (path === 'about') return { type: 'about' };
   if (path === 'process') return { type: 'process' };
@@ -102,6 +107,8 @@ export default function App() {
   });
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
+  const [adminPanelInitialAddProject, setAdminPanelInitialAddProject] = useState(false);
+  const [pendingAddProjectAfterLogin, setPendingAddProjectAfterLogin] = useState(false);
   const [resetPasswordToken, setResetPasswordToken] = useState<string | undefined>(undefined);
 
   // Check URL query parameters and hash for reset password token
@@ -163,14 +170,14 @@ export default function App() {
         title = 'Industry Solutions | IVQIE AI Automation Systems';
         description = 'Domain-specific AI automation architectures for Healthcare, FinTech, E-Commerce, Logistics, Real Estate, and Advisory.';
         break;
-      case 'case-studies':
-        title = 'Production Case Studies | IVQIE Verified Work';
-        description = 'Architectural teardowns, workflow node graphs, and verified business outcomes from deployed IVQIE client systems.';
+      case 'portfolio':
+        title = 'Client Portfolio | IVQIE AI Automation & Marketing';
+        description = 'Explore our verified client portfolio spanning AI Automation, Performance Digital Marketing, and Social Media systems.';
         break;
-      case 'case-study-detail': {
+      case 'portfolio-detail': {
         const proj = projects.find((p) => p.slug === currentRoute.slug || p.id === currentRoute.slug);
         if (proj) {
-          title = `${proj.name} | IVQIE Case Study`;
+          title = `${proj.name} | IVQIE Client Portfolio`;
           description = proj.headline;
         }
         break;
@@ -219,9 +226,9 @@ export default function App() {
     };
   }, []);
 
-  // Find currently active project if on case study detail view
+  // Find currently active project if on portfolio detail view
   const currentProject =
-    currentRoute.type === 'case-study-detail'
+    currentRoute.type === 'portfolio-detail'
       ? projects.find((p) => p.slug === currentRoute.slug || p.id === currentRoute.slug) || projects[0]
       : null;
 
@@ -241,10 +248,13 @@ export default function App() {
       setAnnouncement(updatedAnnouncement);
     });
 
+    const unsubAdminSettings = subscribeToAdminSettings(() => {});
+
     return () => {
       unsubProjects();
       unsubInquiries();
       unsubAnnouncement();
+      unsubAdminSettings();
     };
   }, []);
 
@@ -260,10 +270,14 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isAdminLoggedIn]);
 
-  const handleOpenAdmin = () => {
+  const handleOpenAdmin = (openWithAddProject: boolean = false) => {
+    setAdminPanelInitialAddProject(openWithAddProject);
     if (isAdminLoggedIn) {
       setAdminPanelOpen(true);
     } else {
+      if (openWithAddProject) {
+        setPendingAddProjectAfterLogin(true);
+      }
       setAdminLoginOpen(true);
     }
   };
@@ -271,6 +285,10 @@ export default function App() {
   const handleLoginSuccess = () => {
     setIsAdminLoggedIn(true);
     setAdminLoginOpen(false);
+    if (pendingAddProjectAfterLogin) {
+      setAdminPanelInitialAddProject(true);
+      setPendingAddProjectAfterLogin(false);
+    }
     setAdminPanelOpen(true);
   };
 
@@ -279,6 +297,21 @@ export default function App() {
     localStorage.removeItem('ivqie_admin_session_time');
     setIsAdminLoggedIn(false);
     setAdminPanelOpen(false);
+    setAdminPanelInitialAddProject(false);
+    setPendingAddProjectAfterLogin(false);
+  };
+
+  const handleAddPortfolioClick = () => {
+    handleOpenAdmin(true);
+  };
+
+  const handleDeletePortfolioProject = async (projectId: string) => {
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+    try {
+      await deleteProjectFromFirestore(projectId);
+    } catch (err) {
+      console.warn('Could not delete from Firestore, deleted from local state:', err);
+    }
   };
 
   const handleOpenStrategyCall = (serviceName?: string) => {
@@ -287,7 +320,7 @@ export default function App() {
   };
 
   const handleExploreWork = () => {
-    navigateTo('/case-studies');
+    navigateTo('/portfolio');
   };
 
   const handleSelectServiceFromSection = (serviceName: string) => {
@@ -347,18 +380,18 @@ export default function App() {
                 onViewAllServices={() => navigateTo('/services')}
               />
 
-              {/* 4. Selected Work (Editorial Alternating Case Studies) */}
-              <CaseStudiesSection
+              {/* 4. Client Portfolio Showcase (Dynamic, filterable, with Add Portfolio Project option) */}
+              <PortfolioSection
                 projects={projects}
                 onDiscussProjectClick={handleDiscussProject}
-                onOpenCaseStudy={(slug) => navigateTo(`/case-studies/${slug}`)}
-                onViewAllCaseStudies={() => navigateTo('/case-studies')}
+                onOpenProject={(slug) => navigateTo(`/portfolio/${slug}`)}
+                onViewAllPortfolio={() => navigateTo('/portfolio')}
+                onAddPortfolioClick={handleAddPortfolioClick}
+                isAdminLoggedIn={isAdminLoggedIn}
+                onDeleteProject={handleDeletePortfolioProject}
               />
 
-              {/* 5. Why IVQIE (Deterministic SLA & Engineering Guarantees) */}
-              <WhyIvqieSection />
-
-              {/* 6. Our Process (4-Phase Deployment Protocol) */}
+              {/* 5. Our Process (4-Phase Deployment Protocol) */}
               <ProcessSection />
 
               {/* 7. FAQ */}
@@ -403,7 +436,7 @@ export default function App() {
                 slug={currentRoute.slug}
                 onBack={() => navigateTo('/services')}
                 onBookCall={handleOpenStrategyCall}
-                onOpenCaseStudy={(csSlug) => navigateTo(`/case-studies/${csSlug}`)}
+                onOpenCaseStudy={(csSlug) => navigateTo(`/portfolio/${csSlug}`)}
                 allProjects={projects}
               />
             </motion.div>
@@ -426,39 +459,40 @@ export default function App() {
             </motion.div>
           )}
 
-          {/* Route 5: /case-studies */}
-          {currentRoute.type === 'case-studies' && (
+          {/* Route 5: /portfolio */}
+          {currentRoute.type === 'portfolio' && (
             <motion.div
-              key="route-case-studies"
+              key="route-portfolio"
               initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
               transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
             >
-              <CaseStudiesDirectory
+              <PortfolioDirectory
                 projects={projects}
-                onOpenCaseStudy={(slug) => navigateTo(`/case-studies/${slug}`)}
+                onOpenProject={(slug) => navigateTo(`/portfolio/${slug}`)}
                 onBackToHome={() => navigateTo('/')}
                 onDiscussProject={handleDiscussProject}
+                onAddPortfolioClick={handleAddPortfolioClick}
               />
             </motion.div>
           )}
 
-          {/* Route 6: /case-studies/[slug] */}
-          {currentRoute.type === 'case-study-detail' && currentProject && (
+          {/* Route 6: /portfolio/[slug] */}
+          {currentRoute.type === 'portfolio-detail' && currentProject && (
             <motion.div
-              key={`route-case-study-${currentProject.id}`}
+              key={`route-portfolio-${currentProject.id}`}
               initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
               transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
             >
-              <CaseStudyDetail
+              <PortfolioDetail
                 project={currentProject}
                 allProjects={projects}
-                onBack={() => navigateTo('/case-studies')}
+                onBack={() => navigateTo('/portfolio')}
                 onDiscussProject={handleDiscussProject}
-                onOpenCaseStudy={(slug) => navigateTo(`/case-studies/${slug}`)}
+                onOpenProject={(slug) => navigateTo(`/portfolio/${slug}`)}
               />
             </motion.div>
           )}
@@ -574,7 +608,10 @@ export default function App() {
 
       <AdminPanel
         isOpen={adminPanelOpen}
-        onClose={() => setAdminPanelOpen(false)}
+        onClose={() => {
+          setAdminPanelOpen(false);
+          setAdminPanelInitialAddProject(false);
+        }}
         onLogout={handleLogout}
         projects={projects}
         setProjects={setProjects}
@@ -582,6 +619,7 @@ export default function App() {
         setInquiries={setInquiries}
         announcement={announcement}
         setAnnouncement={setAnnouncement}
+        initialShowAddProject={adminPanelInitialAddProject}
       />
     </div>
   );

@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navLinks = [
     { label: 'Home', path: '/', routeKey: 'home' },
     { label: 'Services', path: '/services', routeKey: 'services' },
-    { label: 'Case Studies', path: '/case-studies', routeKey: 'case-studies' },
+    { label: 'Portfolio', path: '/portfolio', routeKey: 'portfolio' },
     { label: 'About', path: '/about', routeKey: 'about' },
     { label: 'Contact', path: '/contact', routeKey: 'contact' },
   ];
@@ -113,7 +113,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 const isActive =
                   currentRouteType === link.routeKey ||
                   (link.routeKey === 'services' && currentRouteType === 'service-detail') ||
-                  (link.routeKey === 'case-studies' && currentRouteType === 'case-study-detail');
+                  (link.routeKey === 'portfolio' && (currentRouteType === 'portfolio-detail' || currentRouteType === 'case-study-detail' || currentRouteType === 'case-studies'));
 
                 return (
                   <a
@@ -230,7 +230,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     const isActive =
                       currentRouteType === link.routeKey ||
                       (link.routeKey === 'services' && currentRouteType === 'service-detail') ||
-                      (link.routeKey === 'case-studies' && currentRouteType === 'case-study-detail');
+                      (link.routeKey === 'portfolio' && (currentRouteType === 'portfolio-detail' || currentRouteType === 'case-study-detail' || currentRouteType === 'case-studies'));
 
                     return (
                       <button

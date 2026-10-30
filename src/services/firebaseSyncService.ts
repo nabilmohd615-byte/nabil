@@ -167,3 +167,49 @@ export async function saveAnnouncementToFirestore(announcement: SiteAnnouncement
     handleFirestoreError(error, OperationType.WRITE, `${SETTINGS_COLLECTION}/${ANNOUNCEMENT_DOC}`);
   }
 }
+
+const ADMIN_DOC = 'admin_profile';
+
+export interface AdminSettingsData {
+  customUsername?: string;
+  customPassword?: string;
+  securityKey?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Subscribes to real-time Admin settings updates (custom admin username and credentials).
+ */
+export function subscribeToAdminSettings(onUpdate: (settings: AdminSettingsData) => void) {
+  const docRef = doc(db, SETTINGS_COLLECTION, ADMIN_DOC);
+
+  return onSnapshot(
+    docRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data() as AdminSettingsData;
+        if (data.customUsername) {
+          localStorage.setItem('ivqie_admin_custom_username', data.customUsername);
+        }
+        if (data.customPassword) {
+          localStorage.setItem('ivqie_admin_custom_password', data.customPassword);
+        }
+        onUpdate(data);
+      }
+    },
+    (error) => {
+      console.warn('Admin settings listener notice:', error);
+    }
+  );
+}
+
+/**
+ * Updates the admin profile settings in Firestore.
+ */
+export async function saveAdminSettingsToFirestore(settings: AdminSettingsData) {
+  try {
+    await setDoc(doc(db, SETTINGS_COLLECTION, ADMIN_DOC), settings, { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `${SETTINGS_COLLECTION}/${ADMIN_DOC}`);
+  }
+}

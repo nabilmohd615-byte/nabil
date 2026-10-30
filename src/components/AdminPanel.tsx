@@ -11,6 +11,7 @@ import {
   ExternalLink,
   MessageCircle,
   Eye,
+  EyeOff,
   Sparkles,
   Layers,
   ArrowRight,
@@ -20,6 +21,11 @@ import {
   Upload,
   Play,
   Film,
+  KeyRound,
+  ShieldCheck,
+  User,
+  Lock,
+  AlertCircle,
 } from 'lucide-react';
 import { ProjectConcept, saveStoredProjects } from '../data/portfolioData';
 import { InboundInquiry, SiteAnnouncement, saveStoredInquiries, saveStoredAnnouncement } from '../data/inquiriesData';
@@ -29,6 +35,7 @@ import {
   saveAnnouncementToFirestore,
   saveInquiryToFirestore,
   deleteInquiryFromFirestore,
+  saveAdminSettingsToFirestore,
 } from '../services/firebaseSyncService';
 
 interface AdminPanelProps {
@@ -41,6 +48,8 @@ interface AdminPanelProps {
   setInquiries: React.Dispatch<React.SetStateAction<InboundInquiry[]>>;
   announcement: SiteAnnouncement;
   setAnnouncement: React.Dispatch<React.SetStateAction<SiteAnnouncement>>;
+  initialTab?: 'portfolio' | 'content' | 'inquiries' | 'security';
+  initialShowAddProject?: boolean;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -53,11 +62,45 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   setInquiries,
   announcement,
   setAnnouncement,
+  initialTab = 'portfolio',
+  initialShowAddProject = false,
 }) => {
-  const [activeTab, setActiveTab] = useState<'portfolio' | 'content' | 'inquiries'>('portfolio');
+  const [activeTab, setActiveTab] = useState<'portfolio' | 'content' | 'inquiries' | 'security'>(initialTab);
 
   // New Project Form State
-  const [showAddProject, setShowAddProject] = useState(false);
+  const [showAddProject, setShowAddProject] = useState(initialShowAddProject);
+
+  // Admin Credentials & Security State
+  const [currentAdminId, setCurrentAdminId] = useState(() => {
+    return localStorage.getItem('ivqie_admin_custom_username') || 'nabil';
+  });
+  const [newAdminIdInput, setNewAdminIdInput] = useState('');
+  const [adminIdSuccess, setAdminIdSuccess] = useState('');
+  const [adminIdError, setAdminIdError] = useState('');
+  const [isSavingAdminId, setIsSavingAdminId] = useState(false);
+
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialShowAddProject) {
+        setShowAddProject(true);
+        setActiveTab('portfolio');
+      } else if (initialTab) {
+        setActiveTab(initialTab);
+      }
+      // Re-read current admin username from localStorage on open
+      const storedUser = localStorage.getItem('ivqie_admin_custom_username');
+      if (storedUser) {
+        setCurrentAdminId(storedUser);
+      }
+    }
+  }, [isOpen, initialShowAddProject, initialTab]);
   const [newProject, setNewProject] = useState({
     name: '',
     category: 'Social Media Marketing' as 'AI Automation' | 'Digital Marketing' | 'Social Media Marketing',
@@ -76,22 +119,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const [imageUploading, setImageUploading] = useState(false);
   const [videoUploading, setVideoUploading] = useState(false);
+  const [projectFormError, setProjectFormError] = useState('');
+  const [confirmDeleteProjectId, setConfirmDeleteProjectId] = useState<string | null>(null);
+  const [confirmDeleteInquiryId, setConfirmDeleteInquiryId] = useState<string | null>(null);
 
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 8 * 1024 * 1024) {
-      alert('Please select an image smaller than 8MB.');
+      setProjectFormError('Please select an image smaller than 8MB.');
       return;
     }
     setImageUploading(true);
+    setProjectFormError('');
     const reader = new FileReader();
     reader.onload = (event) => {
       setNewProject((prev) => ({ ...prev, imageUrl: event.target?.result as string }));
       setImageUploading(false);
     };
     reader.onerror = () => {
-      alert('Error reading image file');
+      setProjectFormError('Error reading image file');
       setImageUploading(false);
     };
     reader.readAsDataURL(file);
@@ -101,17 +148,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 25 * 1024 * 1024) {
-      alert('Video file is larger than 25MB. For large videos, paste an external video link (MP4, YouTube, Vimeo, Cloudinary) below.');
+      setProjectFormError('Video file is larger than 25MB. For large videos, paste an external video link (MP4, YouTube, Vimeo, Cloudinary) below.');
       return;
     }
     setVideoUploading(true);
+    setProjectFormError('');
     const reader = new FileReader();
     reader.onload = (event) => {
       setNewProject((prev) => ({ ...prev, videoUrl: event.target?.result as string }));
       setVideoUploading(false);
     };
     reader.onerror = () => {
-      alert('Error reading video file');
+      setProjectFormError('Error reading video file');
       setVideoUploading(false);
     };
     reader.readAsDataURL(file);
@@ -130,8 +178,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Handle Add Project
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
+    setProjectFormError('');
     if (!newProject.name.trim() || !newProject.headline.trim()) {
-      alert('Please fill out the project title and headline.');
+      setProjectFormError('Please fill out the project title and headline.');
       return;
     }
 
@@ -204,12 +253,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   // Handle Delete Project
   const handleDeleteProject = (id: string) => {
-    if (confirm('Are you sure you want to remove this project from your website portfolio?')) {
-      const updated = projects.filter((p) => p.id !== id);
-      setProjects(updated);
-      saveStoredProjects(updated);
-      deleteProjectFromFirestore(id);
-    }
+    const updated = projects.filter((p) => p.id !== id);
+    setProjects(updated);
+    saveStoredProjects(updated);
+    deleteProjectFromFirestore(id);
+    setConfirmDeleteProjectId(null);
   };
 
   // Handle Save Announcement Content
@@ -244,12 +292,77 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const handleDeleteInquiry = (id: string) => {
-    if (confirm('Delete this inquiry record?')) {
-      const updated = inquiries.filter((inq) => inq.id !== id);
-      setInquiries(updated);
-      saveStoredInquiries(updated);
-      deleteInquiryFromFirestore(id);
+    const updated = inquiries.filter((inq) => inq.id !== id);
+    setInquiries(updated);
+    saveStoredInquiries(updated);
+    deleteInquiryFromFirestore(id);
+    setConfirmDeleteInquiryId(null);
+  };
+
+  // Handle Update Admin User ID / Username
+  const handleUpdateAdminId = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminIdError('');
+    setAdminIdSuccess('');
+
+    const cleanId = newAdminIdInput.trim();
+    if (!cleanId) {
+      setAdminIdError('Admin User ID cannot be empty.');
+      return;
     }
+
+    if (cleanId.length < 3) {
+      setAdminIdError('Admin User ID must be at least 3 characters long.');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(cleanId)) {
+      setAdminIdError('Admin User ID can only contain letters, numbers, underscores, and hyphens.');
+      return;
+    }
+
+    setIsSavingAdminId(true);
+    try {
+      localStorage.setItem('ivqie_admin_custom_username', cleanId);
+      await saveAdminSettingsToFirestore({
+        customUsername: cleanId,
+        updatedAt: new Date().toISOString(),
+      });
+      setCurrentAdminId(cleanId);
+      setNewAdminIdInput('');
+      setAdminIdSuccess(`Admin User ID successfully changed to "${cleanId}". You will now sign in with this ID.`);
+    } catch {
+      localStorage.setItem('ivqie_admin_custom_username', cleanId);
+      setCurrentAdminId(cleanId);
+      setNewAdminIdInput('');
+      setAdminIdSuccess(`Admin User ID changed to "${cleanId}".`);
+    } finally {
+      setIsSavingAdminId(false);
+    }
+  };
+
+  // Handle Update Admin Password
+  const handleUpdateAdminPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!newAdminPassword || newAdminPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters in length.');
+      return;
+    }
+
+    if (newAdminPassword !== confirmAdminPassword) {
+      setPasswordError('Password confirmation does not match. Please verify.');
+      return;
+    }
+
+    setIsSavingPassword(true);
+    localStorage.setItem('ivqie_admin_custom_password', newAdminPassword);
+    setNewAdminPassword('');
+    setConfirmAdminPassword('');
+    setPasswordSuccess('Administrative password has been successfully updated. Your new password is now active.');
+    setIsSavingPassword(false);
   };
 
   return (
@@ -353,6 +466,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <Mail className="w-4 h-4" />
             <span>Client Inquiries ({inquiries.length})</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('security')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'security'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Admin Security &amp; User ID</span>
+          </button>
         </div>
 
         {/* Scrollable Tab Content */}
@@ -391,6 +516,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </span>
                     <span className="text-[11px] text-neutral-400">Instant publish to site</span>
                   </div>
+
+                  {projectFormError && (
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{projectFormError}</span>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
@@ -695,13 +827,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           </span>
                         </div>
                         {project.isCustom && (
-                          <button
-                            onClick={() => handleDeleteProject(project.id)}
-                            className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 rounded-lg transition-colors"
-                            title="Delete custom project"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          confirmDeleteProjectId === project.id ? (
+                            <div className="flex items-center gap-1.5 bg-neutral-900 border border-rose-500/40 rounded-lg px-2 py-1">
+                              <span className="text-[10px] text-rose-400 font-mono">Delete?</span>
+                              <button
+                                onClick={() => handleDeleteProject(project.id)}
+                                className="px-1.5 py-0.5 text-[10px] bg-rose-600 hover:bg-rose-500 text-white font-bold rounded"
+                              >
+                                Yes
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteProjectId(null)}
+                                className="px-1.5 py-0.5 text-[10px] bg-neutral-800 text-neutral-300 rounded"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteProjectId(project.id)}
+                              className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 rounded-lg transition-colors"
+                              title="Delete custom project"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )
                         )}
                       </div>
 
@@ -1046,19 +1196,260 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <MessageCircle className="w-3.5 h-3.5" />
                           </a>
 
-                          <button
-                            onClick={() => handleDeleteInquiry(inq.id)}
-                            className="p-2 rounded-lg bg-neutral-800 hover:bg-rose-600/20 text-neutral-400 hover:text-rose-400 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          {confirmDeleteInquiryId === inq.id ? (
+                            <div className="flex items-center gap-1.5 bg-neutral-900 border border-rose-500/40 rounded-lg px-2 py-1">
+                              <span className="text-[10px] text-rose-400 font-mono">Delete?</span>
+                              <button
+                                onClick={() => handleDeleteInquiry(inq.id)}
+                                className="px-1.5 py-0.5 text-[10px] bg-rose-600 hover:bg-rose-500 text-white font-bold rounded"
+                              >
+                                Yes
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteInquiryId(null)}
+                                className="px-1.5 py-0.5 text-[10px] bg-neutral-800 text-neutral-300 rounded"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteInquiryId(inq.id)}
+                              className="p-2 rounded-lg bg-neutral-800 hover:bg-rose-600/20 text-neutral-400 hover:text-rose-400 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB 4: ADMIN CREDENTIALS & SECURITY */}
+          {activeTab === 'security' && (
+            <div className="space-y-8 max-w-4xl">
+              <div className="pb-4 border-b border-neutral-800">
+                <h4 className="text-lg font-bold font-['Outfit',sans-serif] text-white flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-rose-500" />
+                  <span>Admin Credentials &amp; Access Control</span>
+                </h4>
+                <p className="text-xs text-neutral-400 mt-1">
+                  Manage your Executive Admin User ID, sign-in password, and verified recovery email address.
+                </p>
+              </div>
+
+              {/* 1. Admin User ID / Username Settings Card */}
+              <div className="p-6 rounded-2xl bg-neutral-950 border border-neutral-800 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-850">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center text-violet-400">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-white">Change Admin User ID (Username)</h5>
+                      <p className="text-xs text-neutral-400">
+                        Customize the identifier you use to sign in to this administrative console.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-neutral-400">Current User ID:</span>
+                    <span className="font-mono text-emerald-400 font-bold bg-neutral-900 px-3 py-1 rounded-lg border border-neutral-800">
+                      {currentAdminId}
+                    </span>
+                  </div>
+                </div>
+
+                {adminIdSuccess && (
+                  <div role="status" className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{adminIdSuccess}</span>
+                  </div>
+                )}
+
+                {adminIdError && (
+                  <div role="alert" className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{adminIdError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleUpdateAdminId} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-300 mb-1.5 font-mono">
+                      New Admin User ID / Username *
+                    </label>
+                    <div className="relative max-w-md">
+                      <input
+                        type="text"
+                        required
+                        value={newAdminIdInput}
+                        onChange={(e) => setNewAdminIdInput(e.target.value)}
+                        placeholder="e.g. nabil, executive, or your preferred ID"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-mono pl-10"
+                      />
+                      <User className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    </div>
+                    <p className="text-[11px] text-neutral-500 mt-1 font-mono">
+                      Must be at least 3 characters. Allowed: letters, numbers, underscores, and hyphens.
+                    </p>
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      type="submit"
+                      disabled={isSavingAdminId}
+                      className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-md inline-flex items-center gap-2"
+                    >
+                      {isSavingAdminId ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Saving User ID...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Save &amp; Update User ID</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* 2. Admin Password Settings Card */}
+              <div className="p-6 rounded-2xl bg-neutral-950 border border-neutral-800 space-y-5">
+                <div className="flex items-center gap-3 pb-4 border-b border-neutral-850">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-bold text-white">Change Admin Password</h5>
+                    <p className="text-xs text-neutral-400">
+                      Update your administrator account password. Takes effect immediately.
+                    </p>
+                  </div>
+                </div>
+
+                {passwordSuccess && (
+                  <div role="status" className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{passwordSuccess}</span>
+                  </div>
+                )}
+
+                {passwordError && (
+                  <div role="alert" className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{passwordError}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleUpdateAdminPassword} className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-300 mb-1.5 font-mono">
+                      New Password (min 6 characters) *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showAdminPassword ? 'text' : 'password'}
+                        required
+                        value={newAdminPassword}
+                        onChange={(e) => setNewAdminPassword(e.target.value)}
+                        placeholder="Enter new strong password"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-mono pr-10 pl-10"
+                      />
+                      <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminPassword(!showAdminPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 focus:outline-none cursor-pointer"
+                      >
+                        {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-300 mb-1.5 font-mono">
+                      Confirm New Password *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showAdminPassword ? 'text' : 'password'}
+                        required
+                        value={confirmAdminPassword}
+                        onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                        placeholder="Re-enter new password"
+                        className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-mono pl-10"
+                      />
+                      <KeyRound className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    </div>
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      type="submit"
+                      disabled={isSavingPassword}
+                      className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-md inline-flex items-center gap-2"
+                    >
+                      {isSavingPassword ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Updating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Update Password</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* 3. Authorized Recovery Email Card */}
+              <div className="p-6 rounded-2xl bg-neutral-950 border border-neutral-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-white">Authorized Owner Recovery Email</h5>
+                      <p className="text-xs text-neutral-400">
+                        Email verified for password recovery links and emergency access tokens.
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Verified Owner Mailbox</span>
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 text-xs font-mono text-white">
+                    <Mail className="w-4 h-4 text-rose-500 shrink-0" />
+                    <span className="font-semibold text-rose-400">mnnabil170@gmail.com</span>
+                  </div>
+                  <span className="text-[11px] text-neutral-500 font-mono hidden sm:inline">
+                    Locked to System Owner
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-neutral-400 leading-relaxed">
+                  If you forget your password on the login screen, click &ldquo;Forgot Password?&rdquo; and enter this address. A single-use 15-minute reset link will be securely generated and sent. Requests from any other email addresses are strictly denied by the backend security protocol.
+                </p>
+              </div>
             </div>
           )}
 

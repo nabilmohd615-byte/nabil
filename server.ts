@@ -419,6 +419,50 @@ app.post('/api/admin/reset-password', (req: Request, res: Response): void => {
   });
 });
 
+// Route 4: Master Security Key Credentials Reset (Key: 120)
+const MASTER_SECURITY_KEY = '120';
+
+app.post('/api/admin/verify-security-key', (req: Request, res: Response): void => {
+  const { securityKey } = req.body;
+  if (!securityKey || typeof securityKey !== 'string') {
+    res.status(400).json({ valid: false, error: 'Security key is required.' });
+    return;
+  }
+  if (securityKey.trim() !== MASTER_SECURITY_KEY) {
+    res.status(403).json({ valid: false, error: 'Invalid security key. Access denied.' });
+    return;
+  }
+  res.status(200).json({ valid: true, message: 'Security key verified.' });
+});
+
+app.post('/api/admin/reset-credentials-with-key', (req: Request, res: Response): void => {
+  const { securityKey, newUsername, newPassword } = req.body;
+
+  if (!securityKey || typeof securityKey !== 'string' || securityKey.trim() !== MASTER_SECURITY_KEY) {
+    res.status(403).json({ success: false, error: 'Invalid security key. Access denied.' });
+    return;
+  }
+
+  const cleanUsername = typeof newUsername === 'string' ? newUsername.trim() : '';
+  if (!cleanUsername || cleanUsername.length < 3) {
+    res.status(400).json({ success: false, error: 'User ID must be at least 3 characters long.' });
+    return;
+  }
+
+  const cleanPassword = typeof newPassword === 'string' ? newPassword.trim() : '';
+  if (!cleanPassword || cleanPassword.length < 6) {
+    res.status(400).json({ success: false, error: 'Password must be at least 6 characters long.' });
+    return;
+  }
+
+  console.log(`[Admin Security] Credentials reset via Master Security Key for user: ${cleanUsername}`);
+  res.status(200).json({
+    success: true,
+    message: 'Admin User ID and Password successfully updated.',
+    username: cleanUsername,
+  });
+});
+
 // ==========================================
 // Frontend Serving (Dev vs Production)
 // ==========================================

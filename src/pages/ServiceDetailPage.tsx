@@ -229,7 +229,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
         </div>
       </section>
 
-      {/* Related Case Studies if any */}
+      {/* Related Portfolio Projects if any */}
       {relatedProjects.length > 0 && (
         <section className="mb-20">
           <div className="mb-8">
@@ -237,7 +237,7 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
               Verified Production Deployments
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white">
-              Related Case Studies
+              Related Portfolio Projects
             </h2>
           </div>
 
@@ -254,9 +254,9 @@ export const ServiceDetailPage: React.FC<ServiceDetailPageProps> = ({
                 </div>
                 <button
                   onClick={() => onOpenCaseStudy(proj.slug || proj.id)}
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
                 >
-                  <span>Read Full Technical Architecture</span>
+                  <span>Explore Portfolio Project</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

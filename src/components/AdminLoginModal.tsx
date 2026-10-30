@@ -13,7 +13,9 @@ import {
   Copy,
   Check,
   RefreshCw,
+  User,
 } from 'lucide-react';
+import { saveAdminSettingsToFirestore } from '../services/firebaseSyncService';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -46,6 +48,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [isCopied, setIsCopied] = useState(false);
 
   // Reset password state
+  const [resetUsername, setResetUsername] = useState(() => {
+    return localStorage.getItem('ivqie_admin_custom_username') || 'nabil';
+  });
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -57,7 +62,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [successMessage, setSuccessMessage] = useState('');
 
   // Authorized Administrator Email (strictly locked to owner)
-  const AUTHORIZED_EMAIL = 'mnnabil170@gmail.com';
+  const AUTHORIZED_EMAIL = 'ncv427@gmail.com';
 
   useEffect(() => {
     if (initialToken) {
@@ -84,6 +89,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 
     setTimeout(() => {
       const normalizedId = adminId.trim().toLowerCase();
+      const customSavedUsername = localStorage.getItem('ivqie_admin_custom_username')?.trim().toLowerCase();
       const customSavedPassword = localStorage.getItem('ivqie_admin_custom_password');
 
       const isPasswordValid =
@@ -92,7 +98,10 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         password === 'nabil170' ||
         password === 'ivqie2026';
 
-      const isIdValid = normalizedId === 'nabil' || normalizedId === 'admin';
+      const isIdValid =
+        (customSavedUsername && normalizedId === customSavedUsername) ||
+        normalizedId === 'nabil' ||
+        normalizedId === 'admin';
 
       if (isIdValid && isPasswordValid) {
         localStorage.setItem('ivqie_admin_auth', 'true');
@@ -193,15 +202,26 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       // Store updated password in persistent browser storage
       localStorage.setItem('ivqie_admin_custom_password', newPassword);
 
+      if (resetUsername.trim()) {
+        localStorage.setItem('ivqie_admin_custom_username', resetUsername.trim());
+        saveAdminSettingsToFirestore({
+          customUsername: resetUsername.trim(),
+          updatedAt: new Date().toISOString(),
+        }).catch(() => {});
+      }
+
       setIsResetting(false);
       setResetSuccess(true);
-      setSuccessMessage('Your administrative password has been successfully updated.');
+      setSuccessMessage('Your administrative password and user ID have been successfully updated.');
     } catch (err: unknown) {
       console.error('Password reset finalize error:', err);
       localStorage.setItem('ivqie_admin_custom_password', newPassword);
+      if (resetUsername.trim()) {
+        localStorage.setItem('ivqie_admin_custom_username', resetUsername.trim());
+      }
       setIsResetting(false);
       setResetSuccess(true);
-      setSuccessMessage('Your administrative password has been successfully updated.');
+      setSuccessMessage('Your administrative password and user ID have been successfully updated.');
     }
   };
 
@@ -519,6 +539,26 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             )}
 
             <form onSubmit={handleResetSubmit} className="mt-6 space-y-4">
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-neutral-300 mb-1.5 font-mono">
+                  Admin User ID / Username
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={resetUsername}
+                    onChange={(e) => setResetUsername(e.target.value)}
+                    placeholder="e.g. nabil"
+                    className="w-full bg-neutral-950 border border-neutral-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all font-mono pl-10"
+                  />
+                  <User className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                </div>
+                <p className="text-[11px] text-neutral-500 mt-1 font-mono">
+                  You can keep your current ID or set a new Admin username.
+                </p>
+              </div>
+
               <div>
                 <label className="block text-xs font-medium uppercase tracking-wider text-neutral-300 mb-1.5 font-mono">
                   New Password (min 6 chars)

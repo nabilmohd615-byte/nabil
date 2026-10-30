@@ -23,9 +23,8 @@ interface HeroProps {
 export const Hero: React.FC<HeroProps> = ({ onBookCallClick, onExploreWorkClick }) => {
   const [stageView, setStageView] = useState<'system' | 'founder'>('system');
   const shouldReduceMotion = useReducedMotion();
-
-  // Subtle interactive parallax offset based on pointer coordinates
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const glow1Ref = React.useRef<HTMLDivElement>(null);
+  const glow2Ref = React.useRef<HTMLDivElement>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (shouldReduceMotion) return;
@@ -33,7 +32,12 @@ export const Hero: React.FC<HeroProps> = ({ onBookCallClick, onExploreWorkClick 
     const { left, top, width, height } = currentTarget.getBoundingClientRect();
     const x = ((clientX - left) / width - 0.5) * 2;
     const y = ((clientY - top) / height - 0.5) * 2;
-    setMouseOffset({ x, y });
+    if (glow1Ref.current) {
+      glow1Ref.current.style.transform = `translate3d(${x * 24}px, ${y * 24}px, 0)`;
+    }
+    if (glow2Ref.current) {
+      glow2Ref.current.style.transform = `translate3d(${-x * 30}px, ${-y * 30}px, 0)`;
+    }
   };
 
   const smoothEase = [0.16, 1, 0.3, 1] as const;
@@ -88,16 +92,12 @@ export const Hero: React.FC<HeroProps> = ({ onBookCallClick, onExploreWorkClick 
     >
       {/* Dynamic Ambient Cinematic Glows with Parallax Shift */}
       <div 
+        ref={glow1Ref}
         className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] bg-gradient-to-tr from-rose-600/15 via-rose-500/10 to-transparent rounded-full blur-[120px] pointer-events-none transition-transform duration-700 ease-out"
-        style={{
-          transform: `translate3d(${mouseOffset.x * 24}px, ${mouseOffset.y * 24}px, 0)`,
-        }}
       />
       <div 
+        ref={glow2Ref}
         className="absolute top-1/3 right-10 w-[450px] sm:w-[600px] h-[450px] sm:h-[600px] bg-gradient-to-bl from-violet-600/12 via-purple-500/8 to-transparent rounded-full blur-[140px] pointer-events-none transition-transform duration-700 ease-out"
-        style={{
-          transform: `translate3d(${-mouseOffset.x * 30}px, ${-mouseOffset.y * 30}px, 0)`,
-        }}
       />
 
       {/* Architectural subtle grid pattern with subtle hairline crosses */}
